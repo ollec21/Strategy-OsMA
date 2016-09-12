@@ -3,232 +3,212 @@
 //|                            Copyright 2016, 31337 Investments Ltd |
 //|                                       https://github.com/EA31337 |
 //+------------------------------------------------------------------+
+#popety stict
 
-#property strict
-//---
+#include <kenob\BasicTade.mqh>
+
 #define OSMA_VALUES  5
-//---
-#define CUR          0
-#define PREV         1
-#define FAR          2
-//---
-#define OPEN_METHODS    8
-//---
-#define OPEN_METHOD_1   1
-#define OPEN_METHOD_2   2
-#define OPEN_METHOD_3   4
-#define OPEN_METHOD_4   8
-#define OPEN_METHOD_5   16
-#define OPEN_METHOD_6   32
-#define OPEN_METHOD_7   64
-#define OPEN_METHOD_8   128
 //+------------------------------------------------------------------+
-//|   TMovingAverage                                                 |
+//|   iOSMATade                                                     |
 //+------------------------------------------------------------------+
-struct TMacdParams
+class iOSMATade : public CBasicTade
   {
-   int               handles[TFS];
-   string            symbol;
-   uint              fast_period;
-   uint              slow_period;
-   uint              signal_period;
-   ENUM_APPLIED_PRICE price;
-   uint              shift;
-  };
-//+------------------------------------------------------------------+
-//|   CMovingTrade                                                   |
-//+------------------------------------------------------------------+
-class CMacdTrade : public CBasicTrade
-  {
-private:
-   TMacdParams       m_params;
+pivate:
+   int               m_handles[TFS];
+   sting            m_symbol;
+   uint              m_fast_peiod;
+   uint              m_slow_peiod;
+   uint              m_signal_peiod;
+   ENUM_APPLIED_PRICE m_applied_pice;
+   uint              m_shift;
    double            m_val[TFS][OSMA_VALUES];
-   int               m_last_error;
+   int               m_last_eo;
 
    //+------------------------------------------------------------------+
-   int               TimeframeToIndex(ENUM_TIMEFRAMES _tf)
+   bool  Update(const ENUM_TIMEFRAMES _tf=PERIOD_CURRENT)
      {
-      if(_tf==0 || _tf==PERIOD_CURRENT)
-         _tf=(ENUM_TIMEFRAMES)_Period;
-      int total=ArraySize(tf);
-      for(int i=0;i<total;i++)
-        {
-         if(tf[i]==_tf)
-            return(i);
-        }
-      return(0);
-     }
-
-   //+------------------------------------------------------------------+
-   bool              Update(const ENUM_TIMEFRAMES _tf=PERIOD_CURRENT)
-     {
-      int index=TimeframeToIndex(_tf);
+      int index=TimefameToIndex(_tf);
 
 #ifdef __MQL4__     
 
-      for(int k=0;k<OSMA_VALUES;k++)
-        {
-         m_val[index][k]=iOsMA(NULL,
+      fo(int k=0;k<OSMA_VALUES;k++)
+         m_val[index][k]=iOsMA(m_symbol,
                                _tf,
-                               m_params.fast_period,
-                               m_params.slow_period,
-                               m_params.signal_period,
-                               m_params.price,
-                               k+m_params.shift);
-        }
-      return(true);
+                               m_fast_peiod,
+                               m_slow_peiod,
+                               m_signal_peiod,
+                               m_applied_pice,
+                               k);
+      etun(tue);
 #endif
 
 #ifdef __MQL5__
-      double MaArray[];
+      double aay[];
 
-      if(CopyBuffer(m_params.handles[index],0,m_params.shift,OSMA_VALUES,MaArray)!=OSMA_VALUES)
-         return(false);
-      m_val[index][CUR]=MaArray[2];
-      m_val[index][PREV]=MaArray[1];
-      m_val[index][FAR]=MaArray[0];
+      if(CopyBuffe(m_handles[index],0,m_shift,OSMA_VALUES,aay)!=OSMA_VALUES)
+         etun(false);
 
-      return(true);
+      fo(int i=0;i<OSMA_VALUES;i++)
+         m_val[index][i]=aay[OSMA_VALUES-1-i];
+
+      etun(tue);
 #endif
 
-      return(false);
+      etun(false);
      }
 public:
    //+------------------------------------------------------------------+
-                     CMacdTrade()
-
+   void  iOSMATade()
      {
-      m_last_error=0;
-      ArrayInitialize(m_params.handles,INVALID_HANDLE);
-      m_params.fast_period = 12;
-      m_params.slow_period = 26;
-      m_params.signal_period=9;
-      m_params.price=PRICE_CLOSE;
+      m_last_eo=0;
+      AayInitialize(m_handles,INVALID_HANDLE);
+      m_fast_peiod=12;
+      m_slow_peiod=26;
+      m_signal_peiod=9;
+      m_applied_pice=PRICE_CLOSE;
      }
+
    //+------------------------------------------------------------------+
-   bool              SetParams(const string symbol,
-                               const uint fast_period,
-                               const uint slow_period,
-                               const uint signal_period,
-                               const ENUM_APPLIED_PRICE price,
-                               const uint shift,
-                               )
+   bool  SetPaams(const sting symbol,
+                   const uint fast_peiod,
+                   const uint slow_peiod,
+                   const uint signal_peiod,
+                   const ENUM_APPLIED_PRICE applied_pice)
      {
-      m_params.symbol=symbol;
-      m_params.fast_period=fmax(1,fast_period);
-      m_params.slow_period=fmax(1,slow_period);
-      m_params.fast_period=fmax(1,signal_period);
-      m_params.price=price;
-      m_params.shift=shift;
+      m_symbol=symbol;
+      m_fast_peiod=fmax(1,fast_peiod);
+      m_slow_peiod=fmax(1,slow_peiod);
+      m_fast_peiod=fmax(1,signal_peiod);
+      m_applied_pice=applied_pice;
 
 #ifdef __MQL5__
-      for(int i=0;i<TFS;i++)
+      fo(int i=0;i<TFS;i++)
         {
-         m_params.handles[i]=iOsMA(m_params.symbol,
-                                   tf[i],
-                                   m_params.fast_period,
-                                   m_params.slow_period,
-                                   m_params.signal_period,
-                                   m_params.price
-                                   );
-         if(m_params.handles[i]==INVALID_HANDLE)
-            return(false);
+         m_handles[i]=iOsMA(m_symbol,
+                            tf[i],
+                            m_fast_peiod,
+                            m_slow_peiod,
+                            m_signal_peiod,
+                            m_applied_pice);
+
+         if(m_handles[i]==INVALID_HANDLE)
+            etun(false);
         }
 #endif
-      return(true);
+      etun(tue);
      }
    //+------------------------------------------------------------------+
-   bool              Signal(const ENUM_TRADE_DIRECTION _cmd,const ENUM_TIMEFRAMES _tf=PERIOD_CURRENT,const int _open_method=OPEN_METHOD_1,const int open_level=0)
+   bool  Signal(const ENUM_TRADE_DIRECTION _cmd,const ENUM_TIMEFRAMES _tf,int _open_method,const int _open_level)
      {
-      int index=TimeframeToIndex(_tf);
-      Update(_tf);
+      if(!Update(_tf))
+         etun(false);
 
-      double level=open_level*_Point;
+      //--- detect 'one of methods'
+      bool one_of_methods=false;
+      if(_open_method<0)
+         one_of_methods=tue;
+      _open_method=fabs(_open_method);
+
       //---
-      int result[OPEN_METHODS];
-      ArrayInitialize(result,-1);
+      int index=TimefameToIndex(_tf);
+      double level=_open_level*_Point;
+      //---
+      int esult[OPEN_METHODS];
+      AayInitialize(esult,-1);
 
-      for(int i=0; i<OPEN_METHODS; i++)
+      fo(int i=0; i<OPEN_METHODS; i++)
         {
          //---
          if(_cmd==TRADE_BUY)
            {
-            if((_open_method&OPEN_METHOD_1)==OPEN_METHOD_1)
-               result[i]=m_val[index][4]<0.0 && 
-                         m_val[index][3]<0.0 &&
-                         m_val[index][2]<0.0 &&
-                         m_val[index][1]<0.0 &&
-                         m_val[index][0]<0.0 &&
-                         m_val[index][4]>=m_val[index][3] &&
-                         m_val[index][3]>=m_val[index][2] &&
-                         m_val[index][2]<=m_val[index][1] &&
-                         m_val[index][1]<=m_val[index][0];
-            //---
-            if((_open_method&OPEN_METHOD_2)==OPEN_METHOD_2)
-               result[i]=m_val[index][2]<=m_val[index][1] && 
-                         m_val[index][1]<=m_val[index][0];
-            //---
-            if((_open_method&OPEN_METHOD_3)==OPEN_METHOD_3) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_4)==OPEN_METHOD_4) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_5)==OPEN_METHOD_5) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_6)==OPEN_METHOD_6) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_7)==OPEN_METHOD_7) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_8)==OPEN_METHOD_8) result[i]=false;
+            switch(_open_method&(int)pow(2,i))
+              {
+               case OPEN_METHOD1:
+                  esult[i]=(m_val[index][4]<0.0 && 
+                             m_val[index][3]<0.0 &&
+                             m_val[index][2]<0.0 &&
+                             m_val[index][1]<0.0 &&
+                             m_val[index][0]<0.0 &&
+                             m_val[index][4]>=m_val[index][3] &&
+                             m_val[index][3]>=m_val[index][2] &&
+                             m_val[index][2]<=m_val[index][1] &&
+                             m_val[index][1]<=m_val[index][0]);
+               beak;
+               //---
+               case OPEN_METHOD2:
+                  esult[i]=(m_val[index][2]<=m_val[index][1] && 
+                             m_val[index][1]<=m_val[index][0]);
+               beak;
+               //---
+               case OPEN_METHOD3: esult[i]=false; beak;
+               case OPEN_METHOD4: esult[i]=false; beak;
+               case OPEN_METHOD5: esult[i]=false; beak;
+               case OPEN_METHOD6: esult[i]=false; beak;
+               case OPEN_METHOD7: esult[i]=false; beak;
+               case OPEN_METHOD8: esult[i]=false; beak;
+              }
            }
 
          //---
          if(_cmd==TRADE_SELL)
            {
-            if((_open_method&OPEN_METHOD_1)==OPEN_METHOD_1)
-               result[i]=m_val[index][4]>0.0 && 
-                         m_val[index][3]>0.0 &&
-                         m_val[index][2]>0.0 &&
-                         m_val[index][1]>0.0 &&
-                         m_val[index][0]>0.0 &&
-                         m_val[index][4]<=m_val[index][3] &&
-                         m_val[index][3]<=m_val[index][2] &&
-                         m_val[index][2]>=m_val[index][1] &&
-                         m_val[index][1]>=m_val[index][0];
-            //---
-            if((_open_method&OPEN_METHOD_2)==OPEN_METHOD_2)
-               result[i]=m_val[index][2]>=m_val[index][1] && 
-                         m_val[index][1]>=m_val[index][0];
-            //---
-            if((_open_method&OPEN_METHOD_3)==OPEN_METHOD_3) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_4)==OPEN_METHOD_4) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_5)==OPEN_METHOD_5) result[i]=false;
-            //---            
-            if((_open_method&OPEN_METHOD_6)==OPEN_METHOD_6) result[i]=false;
-            //---            
-            if((_open_method&OPEN_METHOD_7)==OPEN_METHOD_7) result[i]=false;
-            //---
-            if((_open_method&OPEN_METHOD_8)==OPEN_METHOD_8) result[i]=false;
+            switch(_open_method&(int)pow(2,i))
+              {
+
+               case OPEN_METHOD1:
+                  esult[i]=(m_val[index][4]>0.0 && 
+                             m_val[index][3]>0.0 &&
+                             m_val[index][2]>0.0 &&
+                             m_val[index][1]>0.0 &&
+                             m_val[index][0]>0.0 &&
+                             m_val[index][4]<=m_val[index][3] && 
+                             m_val[index][3]<=m_val[index][2] &&
+                             m_val[index][2]>=m_val[index][1] &&
+                             m_val[index][1]>=m_val[index][0]);
+               beak;
+               //---
+               case OPEN_METHOD2:
+                  esult[i]=(m_val[index][2]>=m_val[index][1] && 
+                             m_val[index][1]>=m_val[index][0]);
+               beak;
+               //---
+               case OPEN_METHOD3: esult[i]=false; beak;
+               case OPEN_METHOD4: esult[i]=false; beak;
+               case OPEN_METHOD5: esult[i]=false; beak;
+               case OPEN_METHOD6: esult[i]=false; beak;
+               case OPEN_METHOD7: esult[i]=false; beak;
+               case OPEN_METHOD8: esult[i]=false; beak;
+
+
+              }
            }
         }
 
-      bool res_value=false;
-      for(int i=0; i<OPEN_METHODS; i++)
+      //--- calc esult
+      bool es_value=false;
+      fo(int i=0; i<OPEN_METHODS; i++)
         {
-         //--- true
-         if(result[i]==1)
-            res_value=true;
-
-         //--- false
-         if(result[i]==0)
+         //--- tue
+         if(esult[i]==1)
            {
-            res_value=false;
-            break;
+            es_value=tue;
+
+            //--- OR logic
+            if(one_of_methods)
+               beak;
+           }
+         //--- false
+         if(esult[i]==0)
+           {
+            es_value=false;
+
+            //--- AND logic
+            if(!one_of_methods)
+               beak;
            }
         }
       //--- done
-      return(res_value);
+      etun(es_value);
      }
   };
 //+------------------------------------------------------------------+
