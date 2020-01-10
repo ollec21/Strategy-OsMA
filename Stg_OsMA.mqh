@@ -6,113 +6,118 @@
 
 /**
  * @file
- * Implements OSMA strategy.
+ * Implements OSMA strategy based on the Moving Average of Oscillator indicator.
  */
 
 // Includes.
-#include "../../EA31337-classes/Indicators/Indi_OSMA.mqh"
-#include "../../EA31337-classes/Strategy.mqh"
+#include <EA31337-classes/Indicators/Indi_OSMA.mqh>
+#include <EA31337-classes/Strategy.mqh>
 
 // User input params.
-string __OSMA_Parameters__ = "-- Settings for the Moving Average of Oscillator indicator --";  // >>> OSMA <<<
-uint OSMA_Active_Tf = 0;                       // Activate timeframes (1-255, e.g. M1=1,M5=2,M15=4,M30=8,H1=16,H2=32...)
-ENUM_TRAIL_TYPE OSMA_TrailingStopMethod = 25;  // Trail stop method
-ENUM_TRAIL_TYPE OSMA_TrailingProfitMethod = 1;              // Trail profit method
-int OSMA_Period_Fast = 8;                                   // Period Fast
-int OSMA_Period_Slow = 6;                                   // Period Slow
-int OSMA_Period_Signal = 9;                                 // Period for signal
-ENUM_APPLIED_PRICE OSMA_Applied_Price = 4;                  // Applied Price
-double OSMA_SignalLevel = -0.2;                             // Signal level
-int OSMA1_SignalMethod = 120;                               // Signal method for M1 (0-
-int OSMA5_SignalMethod = 49;                                // Signal method for M5 (0-
-int OSMA15_SignalMethod = -71;                              // Signal method for M15 (0-
-int OSMA30_SignalMethod = -95;                              // Signal method for M30 (0-
-int OSMA1_OpenCondition1 = 0;                               // Open condition 1 for M1 (0-1023)
-int OSMA1_OpenCondition2 = 0;                               // Open condition 2 for M1 (0-)
-ENUM_MARKET_EVENT OSMA1_CloseCondition = C_OSMA_BUY_SELL;   // Close condition for M1
-int OSMA5_OpenCondition1 = 0;                               // Open condition 1 for M5 (0-1023)
-int OSMA5_OpenCondition2 = 0;                               // Open condition 2 for M5 (0-)
-ENUM_MARKET_EVENT OSMA5_CloseCondition = C_OSMA_BUY_SELL;   // Close condition for M5
-int OSMA15_OpenCondition1 = 0;                              // Open condition 1 for M15 (0-)
-int OSMA15_OpenCondition2 = 0;                              // Open condition 2 for M15 (0-)
-ENUM_MARKET_EVENT OSMA15_CloseCondition = C_OSMA_BUY_SELL;  // Close condition for M15
-int OSMA30_OpenCondition1 = 0;                              // Open condition 1 for M30 (0-)
-int OSMA30_OpenCondition2 = 0;                              // Open condition 2 for M30 (0-)
-ENUM_MARKET_EVENT OSMA30_CloseCondition = C_OSMA_BUY_SELL;  // Close condition for M30
-double OSMA1_MaxSpread = 6.0;                               // Max spread to trade for M1 (pips)
-double OSMA5_MaxSpread = 7.0;                               // Max spread to trade for M5 (pips)
-double OSMA15_MaxSpread = 8.0;                              // Max spread to trade for M15 (pips)
-double OSMA30_MaxSpread = 10.0;                             // Max spread to trade for M30 (pips)
+INPUT string __OSMA_Parameters__ = "-- OsMA strategy params --";  // >>> OSMA <<<
+INPUT int OSMA_Active_Tf = 0;  // Activate timeframes (1-255, e.g. M1=1,M5=2,M15=4,M30=8,H1=16,H2=32...)
+INPUT ENUM_TRAIL_TYPE OSMA_TrailingStopMethod = 25;              // Trail stop method
+INPUT ENUM_TRAIL_TYPE OSMA_TrailingProfitMethod = 1;             // Trail profit method
+INPUT int OSMA_Period_Fast = 8;                                  // Period Fast
+INPUT int OSMA_Period_Slow = 6;                                  // Period Slow
+INPUT int OSMA_Period_Signal = 9;                                // Period for signal
+INPUT ENUM_APPLIED_PRICE OSMA_Applied_Price = 4;                 // Applied Price
+INPUT double OSMA_SignalOpenLevel = -0.2;                        // Signal open level
+INPUT int OSMA1_SignalBaseMethod = 120;                          // Signal base method (0-
+INPUT int OSMA1_OpenCondition1 = 0;                              // Open condition 1 (0-1023)
+INPUT int OSMA1_OpenCondition2 = 0;                              // Open condition 2 (0-)
+INPUT ENUM_MARKET_EVENT OSMA1_CloseCondition = C_OSMA_BUY_SELL;  // Close condition for M1
+INPUT double OSMA_MaxSpread = 6.0;                               // Max spread to trade (pips)
+
+// Struct to define strategy parameters to override.
+struct Stg_OsMA_Params : Stg_Params {
+  unsigned int OsMA_Period;
+  ENUM_APPLIED_PRICE OsMA_Applied_Price;
+  int OsMA_Shift;
+  ENUM_TRAIL_TYPE OsMA_TrailingStopMethod;
+  ENUM_TRAIL_TYPE OsMA_TrailingProfitMethod;
+  double OsMA_SignalOpenLevel;
+  long OsMA_SignalBaseMethod;
+  long OsMA_SignalOpenMethod1;
+  long OsMA_SignalOpenMethod2;
+  double OsMA_SignalCloseLevel;
+  ENUM_MARKET_EVENT OsMA_SignalCloseMethod1;
+  ENUM_MARKET_EVENT OsMA_SignalCloseMethod2;
+  double OsMA_MaxSpread;
+
+  // Constructor: Set default param values.
+  Stg_OsMA_Params()
+      : OsMA_Period(::OsMA_Period),
+        OsMA_Applied_Price(::OsMA_Applied_Price),
+        OsMA_Shift(::OsMA_Shift),
+        OsMA_TrailingStopMethod(::OsMA_TrailingStopMethod),
+        OsMA_TrailingProfitMethod(::OsMA_TrailingProfitMethod),
+        OsMA_SignalOpenLevel(::OsMA_SignalOpenLevel),
+        OsMA_SignalBaseMethod(::OsMA_SignalBaseMethod),
+        OsMA_SignalOpenMethod1(::OsMA_SignalOpenMethod1),
+        OsMA_SignalOpenMethod2(::OsMA_SignalOpenMethod2),
+        OsMA_SignalCloseLevel(::OsMA_SignalCloseLevel),
+        OsMA_SignalCloseMethod1(::OsMA_SignalCloseMethod1),
+        OsMA_SignalCloseMethod2(::OsMA_SignalCloseMethod2),
+        OsMA_MaxSpread(::OsMA_MaxSpread) {}
+};
+
+// Loads pair specific param values.
+#include "sets/EURUSD_H1.h"
+#include "sets/EURUSD_H4.h"
+#include "sets/EURUSD_M1.h"
+#include "sets/EURUSD_M15.h"
+#include "sets/EURUSD_M30.h"
+#include "sets/EURUSD_M5.h"
 
 class Stg_OSMA : public Strategy {
  public:
   Stg_OSMA(StgParams &_params, string _name) : Strategy(_params, _name) {}
 
-  static Stg_OSMA *Init_M1() {
-    ChartParams cparams1(PERIOD_M1);
-    IndicatorParams osma_iparams(10, INDI_OSMA);
-    OsMA_Params osma1_iparams(OSMA_Period_Fast, OSMA_Period_Slow, OSMA_Period_Signal, OSMA_Applied_Price);
-    StgParams osma1_sparams(new Trade(PERIOD_M1, _Symbol), new Indi_OsMA(osma1_iparams, osma_iparams, cparams1), NULL,
-                            NULL);
-    osma1_sparams.SetSignals(OSMA1_SignalMethod, OSMA1_OpenCondition1, OSMA1_OpenCondition2, OSMA1_CloseCondition, NULL,
-                             OSMA_SignalLevel, NULL);
-    osma1_sparams.SetStops(OSMA_TrailingProfitMethod, OSMA_TrailingStopMethod);
-    osma1_sparams.SetMaxSpread(OSMA1_MaxSpread);
-    osma1_sparams.SetId(OSMA1);
-    return (new Stg_OSMA(osma1_sparams, "OSMA1"));
-  }
-  static Stg_OSMA *Init_M5() {
-    ChartParams cparams5(PERIOD_M5);
-    IndicatorParams osma_iparams(10, INDI_OSMA);
-    OsMA_Params osma5_iparams(OSMA_Period_Fast, OSMA_Period_Slow, OSMA_Period_Signal, OSMA_Applied_Price);
-    StgParams osma5_sparams(new Trade(PERIOD_M5, _Symbol), new Indi_OsMA(osma5_iparams, osma_iparams, cparams5), NULL,
-                            NULL);
-    osma5_sparams.SetSignals(OSMA5_SignalMethod, OSMA5_OpenCondition1, OSMA5_OpenCondition2, OSMA5_CloseCondition, NULL,
-                             OSMA_SignalLevel, NULL);
-    osma5_sparams.SetStops(OSMA_TrailingProfitMethod, OSMA_TrailingStopMethod);
-    osma5_sparams.SetMaxSpread(OSMA5_MaxSpread);
-    osma5_sparams.SetId(OSMA5);
-    return (new Stg_OSMA(osma5_sparams, "OSMA5"));
-  }
-  static Stg_OSMA *Init_M15() {
-    ChartParams cparams15(PERIOD_M15);
-    IndicatorParams osma_iparams(10, INDI_OSMA);
-    OsMA_Params osma15_iparams(OSMA_Period_Fast, OSMA_Period_Slow, OSMA_Period_Signal, OSMA_Applied_Price);
-    StgParams osma15_sparams(new Trade(PERIOD_M15, _Symbol), new Indi_OsMA(osma15_iparams, osma_iparams, cparams15),
-                             NULL, NULL);
-    osma15_sparams.SetSignals(OSMA15_SignalMethod, OSMA15_OpenCondition1, OSMA15_OpenCondition2, OSMA15_CloseCondition,
-                              NULL, OSMA_SignalLevel, NULL);
-    osma15_sparams.SetStops(OSMA_TrailingProfitMethod, OSMA_TrailingStopMethod);
-    osma15_sparams.SetMaxSpread(OSMA15_MaxSpread);
-    osma15_sparams.SetId(OSMA15);
-    return (new Stg_OSMA(osma15_sparams, "OSMA15"));
-  }
-  static Stg_OSMA *Init_M30() {
-    ChartParams cparams30(PERIOD_M30);
-    IndicatorParams osma_iparams(10, INDI_OSMA);
-    OsMA_Params osma30_iparams(OSMA_Period_Fast, OSMA_Period_Slow, OSMA_Period_Signal, OSMA_Applied_Price);
-    StgParams osma30_sparams(new Trade(PERIOD_M30, _Symbol), new Indi_OsMA(osma30_iparams, osma_iparams, cparams30),
-                             NULL, NULL);
-    osma30_sparams.SetSignals(OSMA30_SignalMethod, OSMA30_OpenCondition1, OSMA30_OpenCondition2, OSMA30_CloseCondition,
-                              NULL, OSMA_SignalLevel, NULL);
-    osma30_sparams.SetStops(OSMA_TrailingProfitMethod, OSMA_TrailingStopMethod);
-    osma30_sparams.SetMaxSpread(OSMA30_MaxSpread);
-    osma30_sparams.SetId(OSMA30);
-    return (new Stg_OSMA(osma30_sparams, "OSMA30"));
-  }
-  static Stg_OSMA *Init(ENUM_TIMEFRAMES _tf) {
+  static Stg_OsMA *Init(ENUM_TIMEFRAMES _tf = NULL, long _magic_no = NULL, ENUM_LOG_LEVEL _log_level = V_INFO) {
+    // Initialize strategy initial values.
+    Stg_OsMA_Params _params;
     switch (_tf) {
-      case PERIOD_M1:
-        return Init_M1();
-      case PERIOD_M5:
-        return Init_M5();
-      case PERIOD_M15:
-        return Init_M15();
-      case PERIOD_M30:
-        return Init_M30();
-      default:
-        return NULL;
+      case PERIOD_M1: {
+        Stg_OsMA_EURUSD_M1_Params _new_params;
+        _params = _new_params;
+      }
+      case PERIOD_M5: {
+        Stg_OsMA_EURUSD_M5_Params _new_params;
+        _params = _new_params;
+      }
+      case PERIOD_M15: {
+        Stg_OsMA_EURUSD_M15_Params _new_params;
+        _params = _new_params;
+      }
+      case PERIOD_M30: {
+        Stg_OsMA_EURUSD_M30_Params _new_params;
+        _params = _new_params;
+      }
+      case PERIOD_H1: {
+        Stg_OsMA_EURUSD_H1_Params _new_params;
+        _params = _new_params;
+      }
+      case PERIOD_H4: {
+        Stg_OsMA_EURUSD_H4_Params _new_params;
+        _params = _new_params;
+      }
     }
+    // Initialize strategy parameters.
+    ChartParams cparams(_tf);
+    OsMA_Params adx_params(_params.OsMA_Period, _params.OsMA_Applied_Price);
+    IndicatorParams adx_iparams(10, INDI_OsMA);
+    StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(adx_params, adx_iparams, cparams), NULL, NULL);
+    sparams.logger.SetLevel(_log_level);
+    sparams.SetMagicNo(_magic_no);
+    sparams.SetSignals(_params.OsMA_SignalBaseMethod, _params.OsMA_SignalOpenMethod1, _params.OsMA_SignalOpenMethod2,
+                       _params.OsMA_SignalCloseMethod1, _params.OsMA_SignalCloseMethod2, _params.OsMA_SignalOpenLevel,
+                       _params.OsMA_SignalCloseLevel);
+    sparams.SetStops(_params.OsMA_TrailingProfitMethod, _params.OsMA_TrailingStopMethod);
+    sparams.SetMaxSpread(_params.OsMA_MaxSpread);
+    // Initialize strategy instance.
+    Strategy *_strat = new Stg_OsMA(sparams, "OsMA");
+    return _strat;
   }
 
   /**
@@ -160,5 +165,13 @@ class Stg_OSMA : public Strategy {
         break;
     }
     return _result;
+  }
+
+  /**
+   * Check strategy's closing signal.
+   */
+  bool SignalClose(ENUM_ORDER_TYPE _cmd, long _signal_method = EMPTY, double _signal_level = EMPTY) {
+    if (_signal_level == EMPTY) _signal_level = GetSignalCloseLevel();
+    return SignalOpen(Order::NegateOrderType(_cmd), _signal_method, _signal_level);
   }
 };
