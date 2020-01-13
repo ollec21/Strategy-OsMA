@@ -12,15 +12,12 @@ struct Stg_OsMA_EURUSD_H4_Params : Stg_OsMA_Params {
     OsMA_Period = 2;
     OsMA_Applied_Price = 3;
     OsMA_Shift = 0;
-    OsMA_TrailingStopMethod = 6;
-    OsMA_TrailingProfitMethod = 11;
+    OsMA_SignalOpenMethod = 0;
     OsMA_SignalOpenLevel = 36;
-    OsMA_SignalBaseMethod = 0;
-    OsMA_SignalOpenMethod1 = 1;
-    OsMA_SignalOpenMethod2 = 0;
+    OsMA_SignalCloseMethod = 1;
     OsMA_SignalCloseLevel = 36;
-    OsMA_SignalCloseMethod1 = 1;
-    OsMA_SignalCloseMethod2 = 0;
+    OsMA_PriceLimitMethod = 0;
+    OsMA_PriceLimitLevel = 0;
     OsMA_MaxSpread = 10;
   }
 };

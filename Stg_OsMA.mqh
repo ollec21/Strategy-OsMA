@@ -15,34 +15,29 @@
 
 // User input params.
 INPUT string __OSMA_Parameters__ = "-- OsMA strategy params --";  // >>> OSMA <<<
-INPUT int OSMA_Active_Tf = 0;  // Activate timeframes (1-255, e.g. M1=1,M5=2,M15=4,M30=8,H1=16,H2=32...)
-INPUT ENUM_TRAIL_TYPE OSMA_TrailingStopMethod = 25;              // Trail stop method
-INPUT ENUM_TRAIL_TYPE OSMA_TrailingProfitMethod = 1;             // Trail profit method
-INPUT int OSMA_Period_Fast = 8;                                  // Period Fast
-INPUT int OSMA_Period_Slow = 6;                                  // Period Slow
-INPUT int OSMA_Period_Signal = 9;                                // Period for signal
-INPUT ENUM_APPLIED_PRICE OSMA_Applied_Price = 4;                 // Applied Price
-INPUT double OSMA_SignalOpenLevel = -0.2;                        // Signal open level
-INPUT int OSMA1_SignalBaseMethod = 120;                          // Signal base method (0-
-INPUT int OSMA1_OpenCondition1 = 0;                              // Open condition 1 (0-1023)
-INPUT int OSMA1_OpenCondition2 = 0;                              // Open condition 2 (0-)
-INPUT ENUM_MARKET_EVENT OSMA1_CloseCondition = C_OSMA_BUY_SELL;  // Close condition for M1
-INPUT double OSMA_MaxSpread = 6.0;                               // Max spread to trade (pips)
+INPUT int OSMA_Period_Fast = 8;                                   // Period Fast
+INPUT int OSMA_Period_Slow = 6;                                   // Period Slow
+INPUT int OSMA_Period_Signal = 9;                                 // Period for signal
+INPUT ENUM_APPLIED_PRICE OSMA_Applied_Price = 4;                  // Applied Price
+INPUT int OSMA_SignalOpenMethod = 120;                            // Signal open method (0-
+INPUT double OSMA_SignalOpenLevel = -0.2;                         // Signal open level
+INPUT int OSMA_SignalCloseMethod = 120;                           // Signal close method (0-
+INPUT double OSMA_SignalCloseLevel = -0.2;                        // Signal close level
+INPUT int OsMA_PriceLimitMethod = 0;                              // Price limit method
+INPUT double OsMA_PriceLimitLevel = 0;                            // Price limit level
+INPUT double OSMA_MaxSpread = 6.0;                                // Max spread to trade (pips)
 
 // Struct to define strategy parameters to override.
 struct Stg_OsMA_Params : Stg_Params {
   unsigned int OsMA_Period;
   ENUM_APPLIED_PRICE OsMA_Applied_Price;
   int OsMA_Shift;
-  ENUM_TRAIL_TYPE OsMA_TrailingStopMethod;
-  ENUM_TRAIL_TYPE OsMA_TrailingProfitMethod;
+  int OsMA_SignalOpenMethod;
   double OsMA_SignalOpenLevel;
-  long OsMA_SignalBaseMethod;
-  long OsMA_SignalOpenMethod1;
-  long OsMA_SignalOpenMethod2;
+  int OsMA_SignalCloseMethod;
   double OsMA_SignalCloseLevel;
-  ENUM_MARKET_EVENT OsMA_SignalCloseMethod1;
-  ENUM_MARKET_EVENT OsMA_SignalCloseMethod2;
+  int OsMA_PriceLimitMethod;
+  double OsMA_PriceLimitLevel;
   double OsMA_MaxSpread;
 
   // Constructor: Set default param values.
@@ -50,15 +45,12 @@ struct Stg_OsMA_Params : Stg_Params {
       : OsMA_Period(::OsMA_Period),
         OsMA_Applied_Price(::OsMA_Applied_Price),
         OsMA_Shift(::OsMA_Shift),
-        OsMA_TrailingStopMethod(::OsMA_TrailingStopMethod),
-        OsMA_TrailingProfitMethod(::OsMA_TrailingProfitMethod),
+        OsMA_SignalOpenMethod(::OsMA_SignalOpenMethod),
         OsMA_SignalOpenLevel(::OsMA_SignalOpenLevel),
-        OsMA_SignalBaseMethod(::OsMA_SignalBaseMethod),
-        OsMA_SignalOpenMethod1(::OsMA_SignalOpenMethod1),
-        OsMA_SignalOpenMethod2(::OsMA_SignalOpenMethod2),
+        OsMA_SignalCloseMethod(::OsMA_SignalCloseMethod),
         OsMA_SignalCloseLevel(::OsMA_SignalCloseLevel),
-        OsMA_SignalCloseMethod1(::OsMA_SignalCloseMethod1),
-        OsMA_SignalCloseMethod2(::OsMA_SignalCloseMethod2),
+        OsMA_PriceLimitMethod(::OsMA_PriceLimitMethod),
+        OsMA_PriceLimitLevel(::OsMA_PriceLimitLevel),
         OsMA_MaxSpread(::OsMA_MaxSpread) {}
 };
 
@@ -110,10 +102,8 @@ class Stg_OSMA : public Strategy {
     StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(adx_params, adx_iparams, cparams), NULL, NULL);
     sparams.logger.SetLevel(_log_level);
     sparams.SetMagicNo(_magic_no);
-    sparams.SetSignals(_params.OsMA_SignalBaseMethod, _params.OsMA_SignalOpenMethod1, _params.OsMA_SignalOpenMethod2,
-                       _params.OsMA_SignalCloseMethod1, _params.OsMA_SignalCloseMethod2, _params.OsMA_SignalOpenLevel,
+    sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
                        _params.OsMA_SignalCloseLevel);
-    sparams.SetStops(_params.OsMA_TrailingProfitMethod, _params.OsMA_TrailingStopMethod);
     sparams.SetMaxSpread(_params.OsMA_MaxSpread);
     // Initialize strategy instance.
     Strategy *_strat = new Stg_OsMA(sparams, "OsMA");
@@ -126,17 +116,16 @@ class Stg_OSMA : public Strategy {
    * @param
    *   _cmd (int) - type of trade order command
    *   period (int) - period to check for
-   *   _signal_method (int) - signal method to use by using bitwise AND operation
-   *   _signal_level1 (double) - signal level to consider the signal
+   *   _method (int) - signal method to use by using bitwise AND operation
+   *   _level1 (double) - signal level to consider the signal
    */
-  bool SignalOpen(ENUM_ORDER_TYPE _cmd, long _signal_method = EMPTY, double _signal_level = EMPTY) {
+  bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
     bool _result = false;
     double osma_0 = ((Indi_OsMA *)this.Data()).GetValue(0);
     double osma_1 = ((Indi_OsMA *)this.Data()).GetValue(1);
     double osma_2 = ((Indi_OsMA *)this.Data()).GetValue(2);
-    if (_signal_method == EMPTY) _signal_method = GetSignalBaseMethod();
-    if (_signal_level1 == EMPTY) _signal_level1 = GetSignalLevel1();
-    if (_signal_level2 == EMPTY) _signal_level2 = GetSignalLevel2();
+    if (_level1 == EMPTY) _level1 = GetSignalLevel1();
+    if (_level2 == EMPTY) _level2 = GetSignalLevel2();
     switch (_cmd) {
       /*
         //22. Moving Average of Oscillator (MACD histogram) (1)
@@ -170,8 +159,23 @@ class Stg_OSMA : public Strategy {
   /**
    * Check strategy's closing signal.
    */
-  bool SignalClose(ENUM_ORDER_TYPE _cmd, long _signal_method = EMPTY, double _signal_level = EMPTY) {
-    if (_signal_level == EMPTY) _signal_level = GetSignalCloseLevel();
-    return SignalOpen(Order::NegateOrderType(_cmd), _signal_method, _signal_level);
+  bool SignalClose(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
+    return SignalOpen(Order::NegateOrderType(_cmd), _method, _level);
+  }
+
+  /**
+   * Gets price limit value for profit take or stop loss.
+   */
+  double PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_STG_PRICE_LIMIT_MODE _mode, int _method = 0, double _level = 0.0) {
+    double _trail = _level * Market().GetPipSize();
+    int _direction = Order::OrderDirection(_cmd) * (_mode == LIMIT_VALUE_STOP ? -1 : 1);
+    double _default_value = Market().GetCloseOffer(_cmd) + _trail * _method * _direction;
+    double _result = _default_value;
+    switch (_method) {
+      case 0: {
+        // @todo
+      }
+    }
+    return _result;
   }
 };
