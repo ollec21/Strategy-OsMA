@@ -9,7 +9,9 @@ struct Stg_OsMA_EURUSD_H1_Params : Stg_OsMA_Params {
   Stg_OsMA_EURUSD_H1_Params() {
     symbol = "EURUSD";
     tf = PERIOD_H1;
-    OsMA_Period = 2;
+    OsMA_Period_Fast = 12;
+    OsMA_Period_Slow = 26;
+    OsMA_Period_Signal = 9;
     OsMA_Applied_Price = 3;
     OsMA_Shift = 0;
     OsMA_SignalOpenMethod = 0;

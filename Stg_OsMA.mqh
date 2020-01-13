@@ -6,30 +6,33 @@
 
 /**
  * @file
- * Implements OSMA strategy based on the Moving Average of Oscillator indicator.
+ * Implements OsMA strategy based on the Moving Average of Oscillator indicator.
  */
 
 // Includes.
-#include <EA31337-classes/Indicators/Indi_OSMA.mqh>
+#include <EA31337-classes/Indicators/Indi_OsMA.mqh>
 #include <EA31337-classes/Strategy.mqh>
 
 // User input params.
-INPUT string __OSMA_Parameters__ = "-- OsMA strategy params --";  // >>> OSMA <<<
-INPUT int OSMA_Period_Fast = 8;                                   // Period Fast
-INPUT int OSMA_Period_Slow = 6;                                   // Period Slow
-INPUT int OSMA_Period_Signal = 9;                                 // Period for signal
-INPUT ENUM_APPLIED_PRICE OSMA_Applied_Price = 4;                  // Applied Price
-INPUT int OSMA_SignalOpenMethod = 120;                            // Signal open method (0-
-INPUT double OSMA_SignalOpenLevel = -0.2;                         // Signal open level
-INPUT int OSMA_SignalCloseMethod = 120;                           // Signal close method (0-
-INPUT double OSMA_SignalCloseLevel = -0.2;                        // Signal close level
+INPUT string __OsMA_Parameters__ = "-- OsMA strategy params --";  // >>> OsMA <<<
+INPUT int OsMA_Period_Fast = 8;                                   // Period Fast
+INPUT int OsMA_Period_Slow = 6;                                   // Period Slow
+INPUT int OsMA_Period_Signal = 9;                                 // Period for signal
+INPUT ENUM_APPLIED_PRICE OsMA_Applied_Price = 4;                  // Applied Price
+INPUT int OsMA_Shift = 0;                                         // Shift
+INPUT int OsMA_SignalOpenMethod = 120;                            // Signal open method (0-
+INPUT double OsMA_SignalOpenLevel = -0.2;                         // Signal open level
+INPUT int OsMA_SignalCloseMethod = 120;                           // Signal close method (0-
+INPUT double OsMA_SignalCloseLevel = -0.2;                        // Signal close level
 INPUT int OsMA_PriceLimitMethod = 0;                              // Price limit method
 INPUT double OsMA_PriceLimitLevel = 0;                            // Price limit level
-INPUT double OSMA_MaxSpread = 6.0;                                // Max spread to trade (pips)
+INPUT double OsMA_MaxSpread = 6.0;                                // Max spread to trade (pips)
 
 // Struct to define strategy parameters to override.
 struct Stg_OsMA_Params : Stg_Params {
-  unsigned int OsMA_Period;
+  int OsMA_Period_Fast;
+  int OsMA_Period_Slow;
+  int OsMA_Period_Signal;
   ENUM_APPLIED_PRICE OsMA_Applied_Price;
   int OsMA_Shift;
   int OsMA_SignalOpenMethod;
@@ -42,7 +45,9 @@ struct Stg_OsMA_Params : Stg_Params {
 
   // Constructor: Set default param values.
   Stg_OsMA_Params()
-      : OsMA_Period(::OsMA_Period),
+      : OsMA_Period_Fast(::OsMA_Period_Fast),
+        OsMA_Period_Slow(::OsMA_Period_Slow),
+        OsMA_Period_Signal(::OsMA_Period_Signal),
         OsMA_Applied_Price(::OsMA_Applied_Price),
         OsMA_Shift(::OsMA_Shift),
         OsMA_SignalOpenMethod(::OsMA_SignalOpenMethod),
@@ -62,9 +67,9 @@ struct Stg_OsMA_Params : Stg_Params {
 #include "sets/EURUSD_M30.h"
 #include "sets/EURUSD_M5.h"
 
-class Stg_OSMA : public Strategy {
+class Stg_OsMA : public Strategy {
  public:
-  Stg_OSMA(StgParams &_params, string _name) : Strategy(_params, _name) {}
+  Stg_OsMA(StgParams &_params, string _name) : Strategy(_params, _name) {}
 
   static Stg_OsMA *Init(ENUM_TIMEFRAMES _tf = NULL, long _magic_no = NULL, ENUM_LOG_LEVEL _log_level = V_INFO) {
     // Initialize strategy initial values.
@@ -97,9 +102,9 @@ class Stg_OSMA : public Strategy {
     }
     // Initialize strategy parameters.
     ChartParams cparams(_tf);
-    OsMA_Params adx_params(_params.OsMA_Period, _params.OsMA_Applied_Price);
-    IndicatorParams adx_iparams(10, INDI_OsMA);
-    StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(adx_params, adx_iparams, cparams), NULL, NULL);
+    OsMA_Params osma_params(_params.OsMA_Period_Fast, _params.OsMA_Period_Slow, _params.OsMA_Period_Signal, _params.OsMA_Applied_Price);
+    IndicatorParams osma_iparams(10, INDI_OSMA);
+    StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(osma_params, osma_iparams, cparams), NULL, NULL);
     sparams.logger.SetLevel(_log_level);
     sparams.SetMagicNo(_magic_no);
     sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
@@ -111,21 +116,19 @@ class Stg_OSMA : public Strategy {
   }
 
   /**
-   * Check if OSMA indicator is on buy or sell.
+   * Check if OsMA indicator is on buy or sell.
    *
    * @param
    *   _cmd (int) - type of trade order command
    *   period (int) - period to check for
    *   _method (int) - signal method to use by using bitwise AND operation
-   *   _level1 (double) - signal level to consider the signal
+   *   _level (double) - signal level to consider the signal
    */
   bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
     bool _result = false;
     double osma_0 = ((Indi_OsMA *)this.Data()).GetValue(0);
     double osma_1 = ((Indi_OsMA *)this.Data()).GetValue(1);
     double osma_2 = ((Indi_OsMA *)this.Data()).GetValue(2);
-    if (_level1 == EMPTY) _level1 = GetSignalLevel1();
-    if (_level2 == EMPTY) _level2 = GetSignalLevel2();
     switch (_cmd) {
       /*
         //22. Moving Average of Oscillator (MACD histogram) (1)
