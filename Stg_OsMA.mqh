@@ -1,6 +1,6 @@
 //+------------------------------------------------------------------+
 //|                  EA31337 - multi-strategy advanced trading robot |
-//|                       Copyright 2016-2019, 31337 Investments Ltd |
+//|                       Copyright 2016-2020, 31337 Investments Ltd |
 //|                                       https://github.com/EA31337 |
 //+------------------------------------------------------------------+
 
@@ -22,6 +22,8 @@ INPUT ENUM_APPLIED_PRICE OsMA_Applied_Price = 4;                  // Applied Pri
 INPUT int OsMA_Shift = 0;                                         // Shift
 INPUT int OsMA_SignalOpenMethod = 120;                            // Signal open method (0-
 INPUT double OsMA_SignalOpenLevel = -0.2;                         // Signal open level
+INPUT int OsMA_SignalOpenFilterMethod = 0;                        // Signal open filter method
+INPUT int OsMA_SignalOpenBoostMethod = 0;                         // Signal open boost method
 INPUT int OsMA_SignalCloseMethod = 120;                           // Signal close method (0-
 INPUT double OsMA_SignalCloseLevel = -0.2;                        // Signal close level
 INPUT int OsMA_PriceLimitMethod = 0;                              // Price limit method
@@ -37,6 +39,8 @@ struct Stg_OsMA_Params : Stg_Params {
   int OsMA_Shift;
   int OsMA_SignalOpenMethod;
   double OsMA_SignalOpenLevel;
+  int OsMA_SignalOpenFilterMethod;
+  int OsMA_SignalOpenBoostMethod;
   int OsMA_SignalCloseMethod;
   double OsMA_SignalCloseLevel;
   int OsMA_PriceLimitMethod;
@@ -52,6 +56,8 @@ struct Stg_OsMA_Params : Stg_Params {
         OsMA_Shift(::OsMA_Shift),
         OsMA_SignalOpenMethod(::OsMA_SignalOpenMethod),
         OsMA_SignalOpenLevel(::OsMA_SignalOpenLevel),
+        OsMA_SignalOpenFilterMethod(::OsMA_SignalOpenFilterMethod),
+        OsMA_SignalOpenBoostMethod(::OsMA_SignalOpenBoostMethod),
         OsMA_SignalCloseMethod(::OsMA_SignalCloseMethod),
         OsMA_SignalCloseLevel(::OsMA_SignalCloseLevel),
         OsMA_PriceLimitMethod(::OsMA_PriceLimitMethod),
@@ -102,12 +108,14 @@ class Stg_OsMA : public Strategy {
     }
     // Initialize strategy parameters.
     ChartParams cparams(_tf);
-    OsMA_Params osma_params(_params.OsMA_Period_Fast, _params.OsMA_Period_Slow, _params.OsMA_Period_Signal, _params.OsMA_Applied_Price);
+    OsMA_Params osma_params(_params.OsMA_Period_Fast, _params.OsMA_Period_Slow, _params.OsMA_Period_Signal,
+                            _params.OsMA_Applied_Price);
     IndicatorParams osma_iparams(10, INDI_OSMA);
     StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(osma_params, osma_iparams, cparams), NULL, NULL);
     sparams.logger.SetLevel(_log_level);
     sparams.SetMagicNo(_magic_no);
     sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
+                       _params.OsMA_SignalOpenFilterMethod, _params.OsMA_SignalOpenBoostMethod,
                        _params.OsMA_SignalCloseLevel);
     sparams.SetMaxSpread(_params.OsMA_MaxSpread);
     // Initialize strategy instance.
@@ -160,6 +168,38 @@ class Stg_OsMA : public Strategy {
   }
 
   /**
+   * Check strategy's opening signal additional filter.
+   */
+  bool SignalOpenFilter(ENUM_ORDER_TYPE _cmd, int _method = 0) {
+    bool _result = true;
+    if (_method != 0) {
+      // if (METHOD(_method, 0)) _result &= Trade().IsTrend(_cmd);
+      // if (METHOD(_method, 1)) _result &= Trade().IsPivot(_cmd);
+      // if (METHOD(_method, 2)) _result &= Trade().IsPeakHours(_cmd);
+      // if (METHOD(_method, 3)) _result &= Trade().IsRoundNumber(_cmd);
+      // if (METHOD(_method, 4)) _result &= Trade().IsHedging(_cmd);
+      // if (METHOD(_method, 5)) _result &= Trade().IsPeakBar(_cmd);
+    }
+    return _result;
+  }
+
+  /**
+   * Gets strategy's lot size boost (when enabled).
+   */
+  double SignalOpenBoost(ENUM_ORDER_TYPE _cmd, int _method = 0) {
+    bool _result = 1.0;
+    if (_method != 0) {
+      // if (METHOD(_method, 0)) if (Trade().IsTrend(_cmd)) _result *= 1.1;
+      // if (METHOD(_method, 1)) if (Trade().IsPivot(_cmd)) _result *= 1.1;
+      // if (METHOD(_method, 2)) if (Trade().IsPeakHours(_cmd)) _result *= 1.1;
+      // if (METHOD(_method, 3)) if (Trade().IsRoundNumber(_cmd)) _result *= 1.1;
+      // if (METHOD(_method, 4)) if (Trade().IsHedging(_cmd)) _result *= 1.1;
+      // if (METHOD(_method, 5)) if (Trade().IsPeakBar(_cmd)) _result *= 1.1;
+    }
+    return _result;
+  }
+
+  /**
    * Check strategy's closing signal.
    */
   bool SignalClose(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
@@ -169,9 +209,9 @@ class Stg_OsMA : public Strategy {
   /**
    * Gets price limit value for profit take or stop loss.
    */
-  double PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_STG_PRICE_LIMIT_MODE _mode, int _method = 0, double _level = 0.0) {
+  double PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_ORDER_TYPE_VALUE _mode, int _method = 0, double _level = 0.0) {
     double _trail = _level * Market().GetPipSize();
-    int _direction = Order::OrderDirection(_cmd) * (_mode == LIMIT_VALUE_STOP ? -1 : 1);
+    int _direction = Order::OrderDirection(_cmd) * (_mode == ORDER_TYPE_SL ? -1 : 1);
     double _default_value = Market().GetCloseOffer(_cmd) + _trail * _method * _direction;
     double _result = _default_value;
     switch (_method) {
