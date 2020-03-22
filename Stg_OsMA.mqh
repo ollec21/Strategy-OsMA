@@ -101,45 +101,36 @@ class Stg_OsMA : public Strategy {
   }
 
   /**
-   * Check if OsMA indicator is on buy or sell.
-   *
-   * @param
-   *   _cmd (int) - type of trade order command
-   *   period (int) - period to check for
-   *   _method (int) - signal method to use by using bitwise AND operation
-   *   _level (double) - signal level to consider the signal
+   * Check strategy's opening signal.
    */
   bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
-    bool _result = false;
-    double osma_0 = ((Indi_OsMA *)this.Data()).GetValue(0);
-    double osma_1 = ((Indi_OsMA *)this.Data()).GetValue(1);
-    double osma_2 = ((Indi_OsMA *)this.Data()).GetValue(2);
-    switch (_cmd) {
-      /*
-        //22. Moving Average of Oscillator (MACD histogram) (1)
-        //Buy: histogram is below zero and changes falling direction into rising (5 columns are taken)
-        //Sell: histogram is above zero and changes its rising direction into falling (5 columns are taken)
-        if(iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,4)<0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)<0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)<0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)<0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0)<0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,4)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0))
-        {f22=1;}
-        if(iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,4)>0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)>0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)>0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)>0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0)>0&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,4)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,3)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0))
-        {f22=-1;}
-      */
-
-      /*
-        //23. Moving Average of Oscillator (MACD histogram) (2)
-        //To use the indicator it should be correlated with another trend indicator
-        //Flag 23 is 1, when MACD histogram recommends to buy (i.e. histogram is sloping upwards)
-        //Flag 23 is -1, when MACD histogram recommends to sell (i.e. histogram is sloping downwards)
-        //3 columns are taken for calculation
-        if(iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)<=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0))
-        {f23=1;}
-        if(iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,2)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)&&iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,1)>=iOsMA(NULL,pimacd,fastpimacd,slowpimacd,signalpimacd,PRICE_CLOSE,0))
-        {f23=-1;}
-      */
-      case ORDER_TYPE_BUY:
-        break;
-      case ORDER_TYPE_SELL:
-        break;
+    Indicator *_indi = Data();
+    bool _is_valid = _indi[CURR].IsValid() && _indi[PREV].IsValid() && _indi[PPREV].IsValid();
+    bool _result = _is_valid;
+    double _level_pips = _level * Chart().GetPipSize();
+    if (_is_valid) {
+      switch (_cmd) {
+        case ORDER_TYPE_BUY:
+          // Buy: histogram is below zero and changes falling direction into rising (5 columns are taken).
+          _result = _indi[CURR].value[0] < 0 && _indi[CURR].value[0] > _indi[PREV].value[0];
+          if (METHOD(_method, 0)) _result &= _indi[PREV].value[0] < _indi[PPREV].value[0]; // ... 2 consecutive columns are red.
+          if (METHOD(_method, 1)) _result &= _indi[PPREV].value[0] < _indi[3].value[0]; // ... 3 consecutive columns are red.
+          if (METHOD(_method, 2)) _result &= _indi[3].value[0] < _indi[4].value[0]; // ... 4 consecutive columns are red.
+          if (METHOD(_method, 3)) _result &= _indi[PREV].value[0] > _indi[PPREV].value[0]; // ... 2 consecutive columns are green.
+          if (METHOD(_method, 4)) _result &= _indi[PPREV].value[0] > _indi[3].value[0]; // ... 3 consecutive columns are green.
+          if (METHOD(_method, 5)) _result &= _indi[3].value[0] < _indi[4].value[0]; // ... 4 consecutive columns are green.
+          break;
+        case ORDER_TYPE_SELL:
+          // Sell: histogram is above zero and changes its rising direction into falling (5 columns are taken).
+          _result = _indi[CURR].value[0] > 0 && _indi[CURR].value[0] < _indi[PREV].value[0];
+          if (METHOD(_method, 0)) _result &= _indi[PREV].value[0] < _indi[PPREV].value[0]; // ... 2 consecutive columns are red.
+          if (METHOD(_method, 1)) _result &= _indi[PPREV].value[0] < _indi[3].value[0]; // ... 3 consecutive columns are red.
+          if (METHOD(_method, 2)) _result &= _indi[3].value[0] < _indi[4].value[0]; // ... 4 consecutive columns are red.
+          if (METHOD(_method, 3)) _result &= _indi[PREV].value[0] > _indi[PPREV].value[0]; // ... 2 consecutive columns are green.
+          if (METHOD(_method, 4)) _result &= _indi[PPREV].value[0] > _indi[3].value[0]; // ... 3 consecutive columns are green.
+          if (METHOD(_method, 5)) _result &= _indi[3].value[0] < _indi[4].value[0]; // ... 4 consecutive columns are green.
+          break;
+      }
     }
     return _result;
   }
@@ -188,13 +179,14 @@ class Stg_OsMA : public Strategy {
    */
   double PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_ORDER_TYPE_VALUE _mode, int _method = 0, double _level = 0.0) {
     double _trail = _level * Market().GetPipSize();
-    int _direction = Order::OrderDirection(_cmd) * (_mode == ORDER_TYPE_SL ? -1 : 1);
+    int _direction = Order::OrderDirection(_cmd, _mode);
     double _default_value = Market().GetCloseOffer(_cmd) + _trail * _method * _direction;
     double _result = _default_value;
     switch (_method) {
-      case 0: {
+      case 0:
         // @todo
-      }
+        // _indi.GetLowest()/_indi.GetHighest()
+        break;
     }
     return _result;
   }
