@@ -105,7 +105,7 @@ class Stg_OsMA : public Strategy {
    * Check strategy's opening signal.
    */
   bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method = 0, double _level = 0.0) {
-    Indicator *_indi = Data();
+    Indi_OsMA *_indi = Data();
     bool _is_valid = _indi[CURR].IsValid() && _indi[PREV].IsValid() && _indi[PPREV].IsValid();
     bool _result = _is_valid;
     double _level_pips = _level * Chart().GetPipSize();
@@ -179,15 +179,34 @@ class Stg_OsMA : public Strategy {
    * Gets price limit value for profit take or stop loss.
    */
   double PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_ORDER_TYPE_VALUE _mode, int _method = 0, double _level = 0.0) {
+    Indi_OsMA *_indi = Data();
+    bool _is_valid = _indi[CURR].IsValid() && _indi[PREV].IsValid() && _indi[PPREV].IsValid();
     double _trail = _level * Market().GetPipSize();
     int _direction = Order::OrderDirection(_cmd, _mode);
     double _default_value = Market().GetCloseOffer(_cmd) + _trail * _method * _direction;
     double _result = _default_value;
-    switch (_method) {
-      case 0:
-        // @todo
-        // _indi.GetLowest()/_indi.GetHighest()
-        break;
+    if (_is_valid) {
+      switch (_method) {
+        case 0: {
+          int _bar_count = (int) _level * (int) _indi.GetEmaFastPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count)) : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          break;
+        }
+        case 1: {
+          int _bar_count = (int) _level * (int) _indi.GetEmaSlowPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count)) : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          break;
+        }
+        case 2: {
+          int _bar_count = (int) _level * (int) _indi.GetSignalPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count)) : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          break;
+        }
+        case 3:
+          _result = (_direction > 0 ? fmax(_indi[PPREV].value[LINE_MAIN], _indi[PPREV].value[LINE_SIGNAL]) : fmin(_indi[PPREV].value[LINE_MAIN], _indi[PPREV].value[LINE_SIGNAL]));
+          break;
+      }
+      _result += _trail * _direction;
     }
     return _result;
   }
