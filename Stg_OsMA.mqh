@@ -94,6 +94,7 @@ class Stg_OsMA : public Strategy {
     sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
                        _params.OsMA_SignalOpenFilterMethod, _params.OsMA_SignalOpenBoostMethod,
                        _params.OsMA_SignalCloseLevel);
+    sparams.SetPriceLimits(_params.OsMA_PriceLimitMethod, _params.OsMA_PriceLimitLevel);
     sparams.SetMaxSpread(_params.OsMA_MaxSpread);
     // Initialize strategy instance.
     Strategy *_strat = new Stg_OsMA(sparams, "OsMA");
