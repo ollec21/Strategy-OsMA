@@ -89,7 +89,7 @@ class Stg_OsMA : public Strategy {
                             _params.OsMA_Applied_Price);
     osma_params.SetTf(_tf);
     StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(osma_params), NULL, NULL);
-    sparams.logger.SetLevel(_log_level);
+    sparams.logger.Ptr().SetLevel(_log_level);
     sparams.SetMagicNo(_magic_no);
     sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
                        _params.OsMA_SignalOpenFilterMethod, _params.OsMA_SignalOpenBoostMethod,
