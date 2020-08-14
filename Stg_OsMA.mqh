@@ -10,14 +10,14 @@ INPUT int OsMA_Period_Signal = 9;                 // Period for signal
 INPUT ENUM_APPLIED_PRICE OsMA_Applied_Price = 4;  // Applied Price
 INPUT int OsMA_Shift = 0;                         // Shift
 INPUT int OsMA_SignalOpenMethod = 120;            // Signal open method (0-
-INPUT float OsMA_SignalOpenLevel = -0.2;         // Signal open level
+INPUT float OsMA_SignalOpenLevel = -0.2f;         // Signal open level
 INPUT int OsMA_SignalOpenFilterMethod = 0;        // Signal open filter method
 INPUT int OsMA_SignalOpenBoostMethod = 0;         // Signal open boost method
 INPUT int OsMA_SignalCloseMethod = 120;           // Signal close method (0-
-INPUT float OsMA_SignalCloseLevel = -0.2;        // Signal close level
+INPUT float OsMA_SignalCloseLevel = -0.2f;        // Signal close level
 INPUT int OsMA_PriceLimitMethod = 0;              // Price limit method
-INPUT float OsMA_PriceLimitLevel = 0;            // Price limit level
-INPUT float OsMA_MaxSpread = 6.0;                // Max spread to trade (pips)
+INPUT float OsMA_PriceLimitLevel = 0;             // Price limit level
+INPUT float OsMA_MaxSpread = 6.0;                 // Max spread to trade (pips)
 
 // Includes.
 #include <EA31337-classes/Indicators/Indi_OsMA.mqh>
@@ -31,14 +31,14 @@ struct Stg_OsMA_Params : StgParams {
   ENUM_APPLIED_PRICE OsMA_Applied_Price;
   int OsMA_Shift;
   int OsMA_SignalOpenMethod;
-  double OsMA_SignalOpenLevel;
+  float OsMA_SignalOpenLevel;
   int OsMA_SignalOpenFilterMethod;
   int OsMA_SignalOpenBoostMethod;
   int OsMA_SignalCloseMethod;
-  double OsMA_SignalCloseLevel;
+  float OsMA_SignalCloseLevel;
   int OsMA_PriceLimitMethod;
-  double OsMA_PriceLimitLevel;
-  double OsMA_MaxSpread;
+  float OsMA_PriceLimitLevel;
+  float OsMA_MaxSpread;
 
   // Constructor: Set default param values.
   Stg_OsMA_Params()
@@ -178,6 +178,6 @@ class Stg_OsMA : public Strategy {
       }
       _result += _trail * _direction;
     }
-    return _result;
+    return (float)_result;
   }
 };
