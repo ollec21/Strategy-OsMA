@@ -3,64 +3,71 @@
  * Implements OsMA strategy based on the Moving Average of Oscillator indicator.
  */
 
-// User input params.
-INPUT int OsMA_Period_Fast = 8;                   // Period Fast
-INPUT int OsMA_Period_Slow = 6;                   // Period Slow
-INPUT int OsMA_Period_Signal = 9;                 // Period for signal
-INPUT ENUM_APPLIED_PRICE OsMA_Applied_Price = 4;  // Applied Price
-INPUT int OsMA_Shift = 0;                         // Shift
-INPUT int OsMA_SignalOpenMethod = 120;            // Signal open method (0-
-INPUT float OsMA_SignalOpenLevel = -0.2f;         // Signal open level
-INPUT int OsMA_SignalOpenFilterMethod = 0;        // Signal open filter method
-INPUT int OsMA_SignalOpenBoostMethod = 0;         // Signal open boost method
-INPUT int OsMA_SignalCloseMethod = 120;           // Signal close method (0-
-INPUT float OsMA_SignalCloseLevel = -0.2f;        // Signal close level
-INPUT int OsMA_PriceLimitMethod = 0;              // Price limit method
-INPUT float OsMA_PriceLimitLevel = 0;             // Price limit level
-INPUT float OsMA_MaxSpread = 6.0;                 // Max spread to trade (pips)
-
 // Includes.
 #include <EA31337-classes/Indicators/Indi_OsMA.mqh>
 #include <EA31337-classes/Strategy.mqh>
 
+// User input params.
+INPUT float OsMA_LotSize = 0;               // Lot size
+INPUT int OsMA_SignalOpenMethod = 120;      // Signal open method (0-
+INPUT float OsMA_SignalOpenLevel = -0.2f;   // Signal open level
+INPUT int OsMA_SignalOpenFilterMethod = 0;  // Signal open filter method
+INPUT int OsMA_SignalOpenBoostMethod = 0;   // Signal open boost method
+INPUT int OsMA_SignalCloseMethod = 120;     // Signal close method (0-
+INPUT float OsMA_SignalCloseLevel = -0.2f;  // Signal close level
+INPUT int OsMA_PriceLimitMethod = 0;        // Price limit method
+INPUT float OsMA_PriceLimitLevel = 0;       // Price limit level
+INPUT int OsMA_TickFilterMethod = 0;        // Tick filter method
+INPUT float OsMA_MaxSpread = 6.0;           // Max spread to trade (pips)
+INPUT int OsMA_Shift = 0;                   // Shift
+INPUT string __OsMA_Indi_OsMA_Parameters__ =
+    "-- OsMA strategy: OsMA indicator params --";      // >>> OsMA strategy: OsMA indicator <<<
+INPUT int Indi_OsMA_Period_Fast = 8;                   // Period Fast
+INPUT int Indi_OsMA_Period_Slow = 6;                   // Period Slow
+INPUT int Indi_OsMA_Period_Signal = 9;                 // Period for signal
+INPUT ENUM_APPLIED_PRICE Indi_OsMA_Applied_Price = 4;  // Applied Price
+
+// Structs.
+
+// Defines struct with default user indicator values.
+struct Indi_OsMA_Params_Defaults : OsMAParams {
+  Indi_OsMA_Params_Defaults()
+      : OsMAParams(::Indi_OsMA_Period_Fast, ::Indi_OsMA_Period_Slow, ::Indi_OsMA_Period_Signal,
+                   ::Indi_OsMA_Applied_Price) {}
+} indi_osma_defaults;
+
+// Defines struct to store indicator parameter values.
+struct Indi_OsMA_Params : public OsMAParams {
+  // Struct constructors.
+  void Indi_OsMA_Params(OsMAParams &_params, ENUM_TIMEFRAMES _tf) : OsMAParams(_params, _tf) {}
+};
+
+// Defines struct with default user strategy values.
+struct Stg_OsMA_Params_Defaults : StgParams {
+  Stg_OsMA_Params_Defaults()
+      : StgParams(::OsMA_SignalOpenMethod, ::OsMA_SignalOpenFilterMethod, ::OsMA_SignalOpenLevel,
+                  ::OsMA_SignalOpenBoostMethod, ::OsMA_SignalCloseMethod, ::OsMA_SignalCloseLevel,
+                  ::OsMA_PriceLimitMethod, ::OsMA_PriceLimitLevel, ::OsMA_TickFilterMethod, ::OsMA_MaxSpread,
+                  ::OsMA_Shift) {}
+} stg_osma_defaults;
+
 // Struct to define strategy parameters to override.
 struct Stg_OsMA_Params : StgParams {
-  int OsMA_Period_Fast;
-  int OsMA_Period_Slow;
-  int OsMA_Period_Signal;
-  ENUM_APPLIED_PRICE OsMA_Applied_Price;
-  int OsMA_Shift;
-  int OsMA_SignalOpenMethod;
-  float OsMA_SignalOpenLevel;
-  int OsMA_SignalOpenFilterMethod;
-  int OsMA_SignalOpenBoostMethod;
-  int OsMA_SignalCloseMethod;
-  float OsMA_SignalCloseLevel;
-  int OsMA_PriceLimitMethod;
-  float OsMA_PriceLimitLevel;
-  float OsMA_MaxSpread;
+  Indi_OsMA_Params iparams;
+  StgParams sparams;
 
-  // Constructor: Set default param values.
-  Stg_OsMA_Params()
-      : OsMA_Period_Fast(::OsMA_Period_Fast),
-        OsMA_Period_Slow(::OsMA_Period_Slow),
-        OsMA_Period_Signal(::OsMA_Period_Signal),
-        OsMA_Applied_Price(::OsMA_Applied_Price),
-        OsMA_Shift(::OsMA_Shift),
-        OsMA_SignalOpenMethod(::OsMA_SignalOpenMethod),
-        OsMA_SignalOpenLevel(::OsMA_SignalOpenLevel),
-        OsMA_SignalOpenFilterMethod(::OsMA_SignalOpenFilterMethod),
-        OsMA_SignalOpenBoostMethod(::OsMA_SignalOpenBoostMethod),
-        OsMA_SignalCloseMethod(::OsMA_SignalCloseMethod),
-        OsMA_SignalCloseLevel(::OsMA_SignalCloseLevel),
-        OsMA_PriceLimitMethod(::OsMA_PriceLimitMethod),
-        OsMA_PriceLimitLevel(::OsMA_PriceLimitLevel),
-        OsMA_MaxSpread(::OsMA_MaxSpread) {}
+  // Struct constructors.
+  Stg_OsMA_Params(Indi_OsMA_Params &_iparams, StgParams &_sparams)
+      : iparams(indi_osma_defaults, _iparams.tf), sparams(stg_osma_defaults) {
+    iparams = _iparams;
+    sparams = _sparams;
+  }
 };
 
 // Loads pair specific param values.
 #include "sets/EURUSD_H1.h"
 #include "sets/EURUSD_H4.h"
+#include "sets/EURUSD_H8.h"
 #include "sets/EURUSD_M1.h"
 #include "sets/EURUSD_M15.h"
 #include "sets/EURUSD_M30.h"
@@ -72,25 +79,24 @@ class Stg_OsMA : public Strategy {
 
   static Stg_OsMA *Init(ENUM_TIMEFRAMES _tf = NULL, long _magic_no = NULL, ENUM_LOG_LEVEL _log_level = V_INFO) {
     // Initialize strategy initial values.
-    Stg_OsMA_Params _params;
+    Indi_OsMA_Params _indi_params(indi_osma_defaults, _tf);
+    StgParams _stg_params(stg_osma_defaults);
     if (!Terminal::IsOptimization()) {
-      SetParamsByTf<Stg_OsMA_Params>(_params, _tf, stg_osma_m1, stg_osma_m5, stg_osma_m15, stg_osma_m30, stg_osma_h1,
-                                     stg_osma_h4, stg_osma_h4);
+      SetParamsByTf<Indi_OsMA_Params>(_indi_params, _tf, indi_osma_m1, indi_osma_m5, indi_osma_m15, indi_osma_m30,
+                                      indi_osma_h1, indi_osma_h4, indi_osma_h8);
+      SetParamsByTf<StgParams>(_stg_params, _tf, stg_osma_m1, stg_osma_m5, stg_osma_m15, stg_osma_m30, stg_osma_h1,
+                               stg_osma_h4, stg_osma_h8);
     }
+    // Initialize indicator.
+    OsMAParams osma_params(_indi_params);
+    _stg_params.SetIndicator(new Indi_OsMA(_indi_params));
     // Initialize strategy parameters.
-    OsMAParams osma_params(_params.OsMA_Period_Fast, _params.OsMA_Period_Slow, _params.OsMA_Period_Signal,
-                           _params.OsMA_Applied_Price);
-    osma_params.SetTf(_tf);
-    StgParams sparams(new Trade(_tf, _Symbol), new Indi_OsMA(osma_params), NULL, NULL);
-    sparams.logger.Ptr().SetLevel(_log_level);
-    sparams.SetMagicNo(_magic_no);
-    sparams.SetSignals(_params.OsMA_SignalOpenMethod, _params.OsMA_SignalOpenLevel, _params.OsMA_SignalCloseMethod,
-                       _params.OsMA_SignalOpenFilterMethod, _params.OsMA_SignalOpenBoostMethod,
-                       _params.OsMA_SignalCloseLevel);
-    sparams.SetPriceLimits(_params.OsMA_PriceLimitMethod, _params.OsMA_PriceLimitLevel);
-    sparams.SetMaxSpread(_params.OsMA_MaxSpread);
+    _stg_params.GetLog().SetLevel(_log_level);
+    _stg_params.SetMagicNo(_magic_no);
+    _stg_params.SetTf(_tf, _Symbol);
     // Initialize strategy instance.
-    Strategy *_strat = new Stg_OsMA(sparams, "OsMA");
+    Strategy *_strat = new Stg_OsMA(_stg_params, "OsMA");
+    _stg_params.SetStops(_strat, _strat);
     return _strat;
   }
 
@@ -154,21 +160,21 @@ class Stg_OsMA : public Strategy {
     if (_is_valid) {
       switch (_method) {
         case 0: {
-          int _bar_count = (int)_level * (int)_indi.GetEmaFastPeriod();
-          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count))
-                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          int _bar_count0 = (int)_level * (int)_indi.GetEmaFastPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count0))
+                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count0));
           break;
         }
         case 1: {
-          int _bar_count = (int)_level * (int)_indi.GetEmaSlowPeriod();
-          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count))
-                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          int _bar_count1 = (int)_level * (int)_indi.GetEmaSlowPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count1))
+                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count1));
           break;
         }
         case 2: {
-          int _bar_count = (int)_level * (int)_indi.GetSignalPeriod();
-          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count))
-                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count));
+          int _bar_count2 = (int)_level * (int)_indi.GetSignalPeriod();
+          _result = _direction < 0 ? _indi.GetPrice(PRICE_HIGH, _indi.GetHighest(_bar_count2))
+                                   : _indi.GetPrice(PRICE_LOW, _indi.GetLowest(_bar_count2));
           break;
         }
         case 3:

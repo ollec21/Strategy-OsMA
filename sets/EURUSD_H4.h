@@ -1,23 +1,27 @@
-//+------------------------------------------------------------------+
-//|                  EA31337 - multi-strategy advanced trading robot |
-//|                       Copyright 2016-2020, 31337 Investments Ltd |
-//|                                       https://github.com/EA31337 |
-//+------------------------------------------------------------------+
+/*
+ * @file
+ * Defines default strategy parameter values for the given timeframe.
+ */
+
+// Defines indicator's parameter values for the given pair symbol and timeframe.
+struct Indi_OsMA_Params_H4 : Indi_OsMA_Params {
+  Indi_OsMA_Params_H4() : Indi_OsMA_Params(indi_osma_defaults, PERIOD_H4) { shift = 0; }
+} indi_osma_h4;
 
 // Defines strategy's parameter values for the given pair symbol and timeframe.
-struct Stg_OsMA_EURUSD_H4_Params : Stg_OsMA_Params {
-  Stg_OsMA_EURUSD_H4_Params() {
-    OsMA_Period_Fast = 12;
-    OsMA_Period_Slow = 26;
-    OsMA_Period_Signal = 9;
-    OsMA_Applied_Price = 3;
-    OsMA_Shift = 0;
-    OsMA_SignalOpenMethod = 0;
-    OsMA_SignalOpenLevel = 36;
-    OsMA_SignalCloseMethod = 1;
-    OsMA_SignalCloseLevel = 36;
-    OsMA_PriceLimitMethod = 0;
-    OsMA_PriceLimitLevel = 0;
-    OsMA_MaxSpread = 10;
+struct Stg_OsMA_Params_H4 : StgParams {
+  // Struct constructor.
+  Stg_OsMA_Params_H4() : StgParams(stg_osma_defaults) {
+    lot_size = 0;
+    signal_open_method = 0;
+    signal_open_filter = 1;
+    signal_open_level = 0;
+    signal_open_boost = 0;
+    signal_close_method = 0;
+    signal_close_level = 0;
+    price_limit_method = 0;
+    price_limit_level = 2;
+    tick_filter_method = 1;
+    max_spread = 0;
   }
 } stg_osma_h4;

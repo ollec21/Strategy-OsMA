@@ -4,14 +4,14 @@
  */
 
 // Defines indicator's parameter values for the given pair symbol and timeframe.
-struct Indi_OsMA_Params_M5 : Indi_OsMA_Params {
-  Indi_OsMA_Params_M5() : Indi_OsMA_Params(indi_osma_defaults, PERIOD_M5) { shift = 0; }
-} indi_osma_m5;
+struct Indi_OsMA_Params_H8 : Indi_OsMA_Params {
+  Indi_OsMA_Params_H8() : Indi_OsMA_Params(indi_osma_defaults, PERIOD_H8) { shift = 0; }
+} indi_osma_h8;
 
 // Defines strategy's parameter values for the given pair symbol and timeframe.
-struct Stg_OsMA_Params_M5 : StgParams {
+struct Stg_OsMA_Params_H8 : StgParams {
   // Struct constructor.
-  Stg_OsMA_Params_M5() : StgParams(stg_osma_defaults) {
+  Stg_OsMA_Params_H8() : StgParams(stg_osma_defaults) {
     lot_size = 0;
     signal_open_method = 0;
     signal_open_filter = 1;
@@ -24,4 +24,4 @@ struct Stg_OsMA_Params_M5 : StgParams {
     tick_filter_method = 1;
     max_spread = 0;
   }
-} stg_osma_m5;
+} stg_osma_h8;
