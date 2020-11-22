@@ -15,8 +15,8 @@ INPUT int OsMA_SignalOpenFilterMethod = 0;  // Signal open filter method
 INPUT int OsMA_SignalOpenBoostMethod = 0;   // Signal open boost method
 INPUT int OsMA_SignalCloseMethod = 120;     // Signal close method (0-
 INPUT float OsMA_SignalCloseLevel = -0.2f;  // Signal close level
-INPUT int OsMA_PriceLimitMethod = 0;        // Price limit method
-INPUT float OsMA_PriceLimitLevel = 0;       // Price limit level
+INPUT int OsMA_PriceStopMethod = 0;         // Price stop method
+INPUT float OsMA_PriceStopLevel = 0;        // Price stop level
 INPUT int OsMA_TickFilterMethod = 0;        // Tick filter method
 INPUT float OsMA_MaxSpread = 6.0;           // Max spread to trade (pips)
 INPUT int OsMA_Shift = 0;                   // Shift
@@ -47,7 +47,7 @@ struct Stg_OsMA_Params_Defaults : StgParams {
   Stg_OsMA_Params_Defaults()
       : StgParams(::OsMA_SignalOpenMethod, ::OsMA_SignalOpenFilterMethod, ::OsMA_SignalOpenLevel,
                   ::OsMA_SignalOpenBoostMethod, ::OsMA_SignalCloseMethod, ::OsMA_SignalCloseLevel,
-                  ::OsMA_PriceLimitMethod, ::OsMA_PriceLimitLevel, ::OsMA_TickFilterMethod, ::OsMA_MaxSpread,
+                  ::OsMA_PriceStopMethod, ::OsMA_PriceStopLevel, ::OsMA_TickFilterMethod, ::OsMA_MaxSpread,
                   ::OsMA_Shift) {}
 } stg_osma_defaults;
 
@@ -148,9 +148,9 @@ class Stg_OsMA : public Strategy {
   }
 
   /**
-   * Gets price limit value for profit take or stop loss.
+   * Gets price stop value for profit take or stop loss.
    */
-  float PriceLimit(ENUM_ORDER_TYPE _cmd, ENUM_ORDER_TYPE_VALUE _mode, int _method = 0, float _level = 0.0) {
+  float PriceStop(ENUM_ORDER_TYPE _cmd, ENUM_ORDER_TYPE_VALUE _mode, int _method = 0, float _level = 0.0) {
     Indi_OsMA *_indi = Data();
     bool _is_valid = _indi[CURR].IsValid() && _indi[PREV].IsValid() && _indi[PPREV].IsValid();
     double _trail = _level * Market().GetPipSize();
