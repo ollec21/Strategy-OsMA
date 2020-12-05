@@ -112,35 +112,23 @@ class Stg_OsMA : public Strategy {
       switch (_cmd) {
         case ORDER_TYPE_BUY:
           // Buy: histogram is below zero and changes falling direction into rising (5 columns are taken).
-          _result = _indi[CURR].value[0] < 0 && _indi[CURR].value[0] > _indi[PREV].value[0];
-          if (METHOD(_method, 0))
-            _result &= _indi[PREV].value[0] < _indi[PPREV].value[0];  // ... 2 consecutive columns are red.
-          if (METHOD(_method, 1))
-            _result &= _indi[PPREV].value[0] < _indi[3].value[0];  // ... 3 consecutive columns are red.
-          if (METHOD(_method, 2))
-            _result &= _indi[3].value[0] < _indi[4].value[0];  // ... 4 consecutive columns are red.
-          if (METHOD(_method, 3))
-            _result &= _indi[PREV].value[0] > _indi[PPREV].value[0];  // ... 2 consecutive columns are green.
-          if (METHOD(_method, 4))
-            _result &= _indi[PPREV].value[0] > _indi[3].value[0];  // ... 3 consecutive columns are green.
-          if (METHOD(_method, 5))
-            _result &= _indi[3].value[0] < _indi[4].value[0];  // ... 4 consecutive columns are green.
+          _result = _indi[CURR][0] < 0 && _indi[CURR][0] > _indi[PREV][0];
+          if (METHOD(_method, 0)) _result &= _indi[PREV][0] < _indi[PPREV][0];  // ... 2 consecutive columns are red.
+          if (METHOD(_method, 1)) _result &= _indi[PPREV][0] < _indi[3][0];     // ... 3 consecutive columns are red.
+          if (METHOD(_method, 2)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are red.
+          if (METHOD(_method, 3)) _result &= _indi[PREV][0] > _indi[PPREV][0];  // ... 2 consecutive columns are green.
+          if (METHOD(_method, 4)) _result &= _indi[PPREV][0] > _indi[3][0];     // ... 3 consecutive columns are green.
+          if (METHOD(_method, 5)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are green.
           break;
         case ORDER_TYPE_SELL:
           // Sell: histogram is above zero and changes its rising direction into falling (5 columns are taken).
-          _result = _indi[CURR].value[0] > 0 && _indi[CURR].value[0] < _indi[PREV].value[0];
-          if (METHOD(_method, 0))
-            _result &= _indi[PREV].value[0] < _indi[PPREV].value[0];  // ... 2 consecutive columns are red.
-          if (METHOD(_method, 1))
-            _result &= _indi[PPREV].value[0] < _indi[3].value[0];  // ... 3 consecutive columns are red.
-          if (METHOD(_method, 2))
-            _result &= _indi[3].value[0] < _indi[4].value[0];  // ... 4 consecutive columns are red.
-          if (METHOD(_method, 3))
-            _result &= _indi[PREV].value[0] > _indi[PPREV].value[0];  // ... 2 consecutive columns are green.
-          if (METHOD(_method, 4))
-            _result &= _indi[PPREV].value[0] > _indi[3].value[0];  // ... 3 consecutive columns are green.
-          if (METHOD(_method, 5))
-            _result &= _indi[3].value[0] < _indi[4].value[0];  // ... 4 consecutive columns are green.
+          _result = _indi[CURR][0] > 0 && _indi[CURR][0] < _indi[PREV][0];
+          if (METHOD(_method, 0)) _result &= _indi[PREV][0] < _indi[PPREV][0];  // ... 2 consecutive columns are red.
+          if (METHOD(_method, 1)) _result &= _indi[PPREV][0] < _indi[3][0];     // ... 3 consecutive columns are red.
+          if (METHOD(_method, 2)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are red.
+          if (METHOD(_method, 3)) _result &= _indi[PREV][0] > _indi[PPREV][0];  // ... 2 consecutive columns are green.
+          if (METHOD(_method, 4)) _result &= _indi[PPREV][0] > _indi[3][0];     // ... 3 consecutive columns are green.
+          if (METHOD(_method, 5)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are green.
           break;
       }
     }
@@ -178,8 +166,8 @@ class Stg_OsMA : public Strategy {
           break;
         }
         case 4:
-          _result = (_direction > 0 ? fmax(_indi[PPREV].value[LINE_MAIN], _indi[PPREV].value[LINE_SIGNAL])
-                                    : fmin(_indi[PPREV].value[LINE_MAIN], _indi[PPREV].value[LINE_SIGNAL]));
+          _result = (_direction > 0 ? fmax(_indi[PPREV][LINE_MAIN], _indi[PPREV][LINE_SIGNAL])
+                                    : fmin(_indi[PPREV][LINE_MAIN], _indi[PPREV][LINE_SIGNAL]));
           break;
       }
       _result += _trail * _direction;
