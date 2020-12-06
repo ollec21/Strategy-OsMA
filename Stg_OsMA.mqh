@@ -3,10 +3,6 @@
  * Implements OsMA strategy based on the Moving Average of Oscillator indicator.
  */
 
-// Includes.
-#include <EA31337-classes/Indicators/Indi_OsMA.mqh>
-#include <EA31337-classes/Strategy.mqh>
-
 // User input params.
 INPUT float OsMA_LotSize = 0;               // Lot size
 INPUT int OsMA_SignalOpenMethod = 120;      // Signal open method (0-
