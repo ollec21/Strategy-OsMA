@@ -162,8 +162,8 @@ class Stg_OsMA : public Strategy {
           break;
         }
         case 4:
-          _result = (_direction > 0 ? fmax(_indi[PPREV][LINE_MAIN], _indi[PPREV][LINE_SIGNAL])
-                                    : fmin(_indi[PPREV][LINE_MAIN], _indi[PPREV][LINE_SIGNAL]));
+          _result = (_direction > 0 ? fmax(_indi[PPREV][(int)LINE_MAIN], _indi[PPREV][(int)LINE_SIGNAL])
+                                    : fmin(_indi[PPREV][(int)LINE_MAIN], _indi[PPREV][(int)LINE_SIGNAL]));
           break;
       }
       _result += _trail * _direction;
