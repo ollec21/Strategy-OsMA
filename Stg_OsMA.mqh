@@ -16,6 +16,7 @@ INPUT float OsMA_PriceStopLevel = 0;        // Price stop level
 INPUT int OsMA_TickFilterMethod = 0;        // Tick filter method
 INPUT float OsMA_MaxSpread = 6.0;           // Max spread to trade (pips)
 INPUT int OsMA_Shift = 0;                   // Shift
+INPUT int OsMA_OrderCloseTime = -10;        // Order close time in mins (>0) or bars (<0)
 INPUT string __OsMA_Indi_OsMA_Parameters__ =
     "-- OsMA strategy: OsMA indicator params --";      // >>> OsMA strategy: OsMA indicator <<<
 INPUT int Indi_OsMA_Period_Fast = 8;                   // Period Fast
@@ -44,7 +45,7 @@ struct Stg_OsMA_Params_Defaults : StgParams {
       : StgParams(::OsMA_SignalOpenMethod, ::OsMA_SignalOpenFilterMethod, ::OsMA_SignalOpenLevel,
                   ::OsMA_SignalOpenBoostMethod, ::OsMA_SignalCloseMethod, ::OsMA_SignalCloseLevel,
                   ::OsMA_PriceStopMethod, ::OsMA_PriceStopLevel, ::OsMA_TickFilterMethod, ::OsMA_MaxSpread,
-                  ::OsMA_Shift) {}
+                  ::OsMA_Shift, ::OsMA_OrderCloseTime) {}
 } stg_osma_defaults;
 
 // Struct to define strategy parameters to override.
