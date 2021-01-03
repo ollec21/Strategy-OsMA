@@ -1,0 +1,7 @@
+; Optimize strategy indicator's OsMA period param.
+OsMA_Indi_OsMA_Period,1=4
+OsMA_Indi_OsMA_Period,2=4
+OsMA_Indi_OsMA_Period,3=24
+OsMA_Indi_OsMA_Period,F=1
+OsMA_SignalOpenFilterMethod=1
+OsMA_TickFilterMethod=1
