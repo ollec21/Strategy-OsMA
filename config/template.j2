@@ -25,7 +25,7 @@ struct Stg_OsMA_Params_{{ Timeframe }} : StgParams {
     signal_close_method = {{ OsMA_SignalCloseMethod | default(0) }};
     signal_close_level = (float){{ OsMA_SignalCloseLevel | default(0) }};
     price_stop_method = {{ OsMA_PriceStopMethod | default(0) }};
-    price_stop_level = {{ OsMA_SignalCloseLevel | default(1) }};
+    price_stop_level = (float){{ OsMA_SignalCloseLevel | default(1) }};
     tick_filter_method = {{ OsMA_TickFilterMethod  | default(1) }};
     max_spread = {{ OsMA_MaxSpread | default(0) }};
   }
