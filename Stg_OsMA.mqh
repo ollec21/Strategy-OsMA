@@ -18,26 +18,21 @@ INPUT float OsMA_MaxSpread = 4.0;           // Max spread to trade (pips)
 INPUT int OsMA_Shift = 0;                   // Shift
 INPUT int OsMA_OrderCloseTime = -20;        // Order close time in mins (>0) or bars (<0)
 INPUT string __OsMA_Indi_OsMA_Parameters__ =
-    "-- OsMA strategy: OsMA indicator params --";      // >>> OsMA strategy: OsMA indicator <<<
-INPUT int Indi_OsMA_Period_Fast = 8;                   // Period Fast
-INPUT int Indi_OsMA_Period_Slow = 6;                   // Period Slow
-INPUT int Indi_OsMA_Period_Signal = 9;                 // Period for signal
-INPUT ENUM_APPLIED_PRICE Indi_OsMA_Applied_Price = 4;  // Applied Price
+    "-- OsMA strategy: OsMA indicator params --";           // >>> OsMA strategy: OsMA indicator <<<
+INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                   // Period Fast
+INPUT int OsMA_Indi_OsMA_Period_Slow = 6;                   // Period Slow
+INPUT int OsMA_Indi_OsMA_Period_Signal = 9;                 // Period for signal
+INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = 4;  // Applied Price
+INPUT int OsMA_Indi_OsMA_Shift = 0;                         // Shift
 
 // Structs.
 
 // Defines struct with default user indicator values.
 struct Indi_OsMA_Params_Defaults : OsMAParams {
   Indi_OsMA_Params_Defaults()
-      : OsMAParams(::Indi_OsMA_Period_Fast, ::Indi_OsMA_Period_Slow, ::Indi_OsMA_Period_Signal,
-                   ::Indi_OsMA_Applied_Price) {}
+      : OsMAParams(::OsMA_Indi_OsMA_Period_Fast, ::OsMA_Indi_OsMA_Period_Slow, ::OsMA_Indi_OsMA_Period_Signal,
+                   ::OsMA_Indi_OsMA_Applied_Price, ::OsMA_Indi_OsMA_Shift) {}
 } indi_osma_defaults;
-
-// Defines struct to store indicator parameter values.
-struct Indi_OsMA_Params : public OsMAParams {
-  // Struct constructors.
-  void Indi_OsMA_Params(OsMAParams &_params, ENUM_TIMEFRAMES _tf) : OsMAParams(_params, _tf) {}
-};
 
 // Defines struct with default user strategy values.
 struct Stg_OsMA_Params_Defaults : StgParams {
