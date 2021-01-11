@@ -45,11 +45,11 @@ struct Stg_OsMA_Params_Defaults : StgParams {
 
 // Struct to define strategy parameters to override.
 struct Stg_OsMA_Params : StgParams {
-  Indi_OsMA_Params iparams;
+  OsMAParams iparams;
   StgParams sparams;
 
   // Struct constructors.
-  Stg_OsMA_Params(Indi_OsMA_Params &_iparams, StgParams &_sparams)
+  Stg_OsMA_Params(OsMAParams &_iparams, StgParams &_sparams)
       : iparams(indi_osma_defaults, _iparams.tf), sparams(stg_osma_defaults) {
     iparams = _iparams;
     sparams = _sparams;
@@ -71,11 +71,11 @@ class Stg_OsMA : public Strategy {
 
   static Stg_OsMA *Init(ENUM_TIMEFRAMES _tf = NULL, long _magic_no = NULL, ENUM_LOG_LEVEL _log_level = V_INFO) {
     // Initialize strategy initial values.
-    Indi_OsMA_Params _indi_params(indi_osma_defaults, _tf);
+    OsMAParams _indi_params(indi_osma_defaults, _tf);
     StgParams _stg_params(stg_osma_defaults);
     if (!Terminal::IsOptimization()) {
-      SetParamsByTf<Indi_OsMA_Params>(_indi_params, _tf, indi_osma_m1, indi_osma_m5, indi_osma_m15, indi_osma_m30,
-                                      indi_osma_h1, indi_osma_h4, indi_osma_h8);
+      SetParamsByTf<OsMAParams>(_indi_params, _tf, indi_osma_m1, indi_osma_m5, indi_osma_m15, indi_osma_m30,
+                                indi_osma_h1, indi_osma_h4, indi_osma_h8);
       SetParamsByTf<StgParams>(_stg_params, _tf, stg_osma_m1, stg_osma_m5, stg_osma_m15, stg_osma_m30, stg_osma_h1,
                                stg_osma_h4, stg_osma_h8);
     }
