@@ -18,12 +18,12 @@ INPUT float OsMA_MaxSpread = 4.0;           // Max spread to trade (pips)
 INPUT int OsMA_Shift = 0;                   // Shift
 INPUT int OsMA_OrderCloseTime = -20;        // Order close time in mins (>0) or bars (<0)
 INPUT string __OsMA_Indi_OsMA_Parameters__ =
-    "-- OsMA strategy: OsMA indicator params --";           // >>> OsMA strategy: OsMA indicator <<<
-INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                   // Period Fast
-INPUT int OsMA_Indi_OsMA_Period_Slow = 6;                   // Period Slow
-INPUT int OsMA_Indi_OsMA_Period_Signal = 9;                 // Period for signal
-INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = 4;  // Applied Price
-INPUT int OsMA_Indi_OsMA_Shift = 0;                         // Shift
+    "-- OsMA strategy: OsMA indicator params --";                               // >>> OsMA strategy: OsMA indicator <<<
+INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                                       // Period Fast
+INPUT int OsMA_Indi_OsMA_Period_Slow = 6;                                       // Period Slow
+INPUT int OsMA_Indi_OsMA_Period_Signal = 9;                                     // Period for signal
+INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = (ENUM_APPLIED_PRICE)4;  // Applied Price
+INPUT int OsMA_Indi_OsMA_Shift = 0;                                             // Shift
 
 // Structs.
 
