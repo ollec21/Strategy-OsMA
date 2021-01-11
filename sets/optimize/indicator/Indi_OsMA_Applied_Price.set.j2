@@ -9,5 +9,5 @@ OsMA_Indi_OsMA_Shift={{ shift | default(0) }}
 OsMA_LotSize={{ lot_size | default(0) }}
 OsMA_PriceStopMethod=0
 OsMA_SignalOpenFilterMethod=1
-OsMA_SignalOpenLevel={{ signal_open_level | replace("(float)", "") | float | default(0) }}
+OsMA_SignalOpenLevel={{ (signal_open_level | default(0) | replace("(float)", "") | float) }}
 OsMA_TickFilterMethod=1
