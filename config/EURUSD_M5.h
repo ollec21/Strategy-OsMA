@@ -5,7 +5,13 @@
 
 // Defines indicator's parameter values for the given pair symbol and timeframe.
 struct Indi_OsMA_Params_M5 : OsMAParams {
-  Indi_OsMA_Params_M5() : OsMAParams(indi_osma_defaults, PERIOD_M5) { shift = 0; }
+  Indi_OsMA_Params_M5() : OsMAParams(indi_osma_defaults, PERIOD_M5) {
+    applied_price = (ENUM_APPLIED_PRICE)0;
+    ema_fast_period = 10;
+    ema_slow_period = 54;
+    signal_period = 14;
+    shift = 0;
+  }
 } indi_osma_m5;
 
 // Defines strategy's parameter values for the given pair symbol and timeframe.

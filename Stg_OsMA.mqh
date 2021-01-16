@@ -21,7 +21,7 @@ INPUT string __OsMA_Indi_OsMA_Parameters__ =
     "-- OsMA strategy: OsMA indicator params --";                               // >>> OsMA strategy: OsMA indicator <<<
 INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                                       // Period fast
 INPUT int OsMA_Indi_OsMA_Period_Slow = 20;                                      // Period slow
-INPUT int OsMA_Indi_OsMA_Period_Signal = 14;                                    // Period for signal
+INPUT int OsMA_Indi_OsMA_Period_Signal = 14;                                    // Period signal
 INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = (ENUM_APPLIED_PRICE)4;  // Applied price
 INPUT int OsMA_Indi_OsMA_Shift = 0;                                             // Shift
 

@@ -10,7 +10,7 @@ struct Indi_OsMA_Params_{{ Timeframe }} : OsMAParams {
     ema_fast_period = {{ OsMA_Indi_OsMA_Period_Fast | default(0) }};
     ema_slow_period = {{ OsMA_Indi_OsMA_Period_Slow | default(0) }};
     signal_period = {{ OsMA_Indi_OsMA_Period_Signal | default(0) }};
-    shift = {{ OsMA_Shift | default(0) }};
+    shift = {{ OsMA_Indi_OsMA_Shift | default(0) }};
   }
 } indi_osma_{{ Timeframe | lower }};
 
