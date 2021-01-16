@@ -5,11 +5,11 @@
 
 // User input params.
 INPUT float OsMA_LotSize = 0;               // Lot size
-INPUT int OsMA_SignalOpenMethod = 0;        // Signal open method (0-
+INPUT int OsMA_SignalOpenMethod = 0;        // Signal open method (-1-1)
 INPUT float OsMA_SignalOpenLevel = 0.0f;    // Signal open level
 INPUT int OsMA_SignalOpenFilterMethod = 1;  // Signal open filter method
 INPUT int OsMA_SignalOpenBoostMethod = 0;   // Signal open boost method
-INPUT int OsMA_SignalCloseMethod = 120;     // Signal close method (0-
+INPUT int OsMA_SignalCloseMethod = 120;     // Signal close method (-1-1)
 INPUT float OsMA_SignalCloseLevel = 0.0f;   // Signal close level
 INPUT int OsMA_PriceStopMethod = 0;         // Price stop method
 INPUT float OsMA_PriceStopLevel = 0;        // Price stop level
@@ -19,10 +19,10 @@ INPUT int OsMA_Shift = 0;                   // Shift
 INPUT int OsMA_OrderCloseTime = -20;        // Order close time in mins (>0) or bars (<0)
 INPUT string __OsMA_Indi_OsMA_Parameters__ =
     "-- OsMA strategy: OsMA indicator params --";                               // >>> OsMA strategy: OsMA indicator <<<
-INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                                       // Period Fast
-INPUT int OsMA_Indi_OsMA_Period_Slow = 6;                                       // Period Slow
-INPUT int OsMA_Indi_OsMA_Period_Signal = 9;                                     // Period for signal
-INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = (ENUM_APPLIED_PRICE)4;  // Applied Price
+INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                                       // Period fast
+INPUT int OsMA_Indi_OsMA_Period_Slow = 20;                                      // Period slow
+INPUT int OsMA_Indi_OsMA_Period_Signal = 14;                                    // Period for signal
+INPUT ENUM_APPLIED_PRICE OsMA_Indi_OsMA_Applied_Price = (ENUM_APPLIED_PRICE)4;  // Applied price
 INPUT int OsMA_Indi_OsMA_Shift = 0;                                             // Shift
 
 // Structs.
@@ -97,30 +97,27 @@ class Stg_OsMA : public Strategy {
    */
   bool SignalOpen(ENUM_ORDER_TYPE _cmd, int _method = 0, float _level = 0.0f, int _shift = 0) {
     Indi_OsMA *_indi = Data();
-    bool _is_valid = _indi[CURR].IsValid() && _indi[PREV].IsValid() && _indi[PPREV].IsValid();
+    bool _is_valid = _indi[_shift].IsValid() && _indi[_shift + 1].IsValid() && _indi[_shift + 2].IsValid();
     bool _result = _is_valid;
-    double _level_pips = _level * Chart().GetPipSize();
     if (_is_valid) {
       switch (_cmd) {
         case ORDER_TYPE_BUY:
           // Buy: histogram is below zero and changes falling direction into rising (5 columns are taken).
-          _result = _indi[CURR][0] < 0 && _indi[CURR][0] > _indi[PREV][0];
-          if (METHOD(_method, 0)) _result &= _indi[PREV][0] < _indi[PPREV][0];  // ... 2 consecutive columns are red.
-          if (METHOD(_method, 1)) _result &= _indi[PPREV][0] < _indi[3][0];     // ... 3 consecutive columns are red.
-          if (METHOD(_method, 2)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are red.
-          if (METHOD(_method, 3)) _result &= _indi[PREV][0] > _indi[PPREV][0];  // ... 2 consecutive columns are green.
-          if (METHOD(_method, 4)) _result &= _indi[PPREV][0] > _indi[3][0];     // ... 3 consecutive columns are green.
-          if (METHOD(_method, 5)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are green.
+          _result &= _indi[_shift + 2][0] < 0;
+          _result &= _indi.IsIncreasing(2, 0, _shift);
+          _result &= _indi.IsIncByPct(_level, 0, _shift, 2);
+          if (_result && _method != 0) {
+            if (METHOD(_method, 1)) _result &= _indi.IsDecreasing(2, 0, 3);
+          }
           break;
         case ORDER_TYPE_SELL:
           // Sell: histogram is above zero and changes its rising direction into falling (5 columns are taken).
-          _result = _indi[CURR][0] > 0 && _indi[CURR][0] < _indi[PREV][0];
-          if (METHOD(_method, 0)) _result &= _indi[PREV][0] < _indi[PPREV][0];  // ... 2 consecutive columns are red.
-          if (METHOD(_method, 1)) _result &= _indi[PPREV][0] < _indi[3][0];     // ... 3 consecutive columns are red.
-          if (METHOD(_method, 2)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are red.
-          if (METHOD(_method, 3)) _result &= _indi[PREV][0] > _indi[PPREV][0];  // ... 2 consecutive columns are green.
-          if (METHOD(_method, 4)) _result &= _indi[PPREV][0] > _indi[3][0];     // ... 3 consecutive columns are green.
-          if (METHOD(_method, 5)) _result &= _indi[3][0] < _indi[4][0];         // ... 4 consecutive columns are green.
+          _result &= _indi[_shift + 2][0] > 0;
+          _result &= _indi.IsDecreasing(2, 0, _shift);
+          _result &= _indi.IsDecByPct(-_level, 0, _shift, 2);
+          if (_result && _method != 0) {
+            if (METHOD(_method, 1)) _result &= _indi.IsIncreasing(2, 0, 3);
+          }
           break;
       }
     }
