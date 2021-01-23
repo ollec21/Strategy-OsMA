@@ -4,19 +4,20 @@
  */
 
 // User input params.
-INPUT float OsMA_LotSize = 0;               // Lot size
-INPUT int OsMA_SignalOpenMethod = 0;        // Signal open method (-1-1)
-INPUT float OsMA_SignalOpenLevel = 0.0f;    // Signal open level
-INPUT int OsMA_SignalOpenFilterMethod = 1;  // Signal open filter method
-INPUT int OsMA_SignalOpenBoostMethod = 0;   // Signal open boost method
-INPUT int OsMA_SignalCloseMethod = 120;     // Signal close method (-1-1)
-INPUT float OsMA_SignalCloseLevel = 0.0f;   // Signal close level
-INPUT int OsMA_PriceStopMethod = 0;         // Price stop method
-INPUT float OsMA_PriceStopLevel = 0;        // Price stop level
-INPUT int OsMA_TickFilterMethod = 1;        // Tick filter method
-INPUT float OsMA_MaxSpread = 4.0;           // Max spread to trade (pips)
-INPUT int OsMA_Shift = 0;                   // Shift
-INPUT int OsMA_OrderCloseTime = -20;        // Order close time in mins (>0) or bars (<0)
+INPUT string __OsMA_Parameters__ = "-- OsMA strategy params --";  // >>> OsMA <<<
+INPUT float OsMA_LotSize = 0;                                     // Lot size
+INPUT int OsMA_SignalOpenMethod = 0;                              // Signal open method (-1-1)
+INPUT float OsMA_SignalOpenLevel = 0.0f;                          // Signal open level
+INPUT int OsMA_SignalOpenFilterMethod = 1;                        // Signal open filter method
+INPUT int OsMA_SignalOpenBoostMethod = 0;                         // Signal open boost method
+INPUT int OsMA_SignalCloseMethod = 120;                           // Signal close method (-1-1)
+INPUT float OsMA_SignalCloseLevel = 0.0f;                         // Signal close level
+INPUT int OsMA_PriceStopMethod = 0;                               // Price stop method
+INPUT float OsMA_PriceStopLevel = 0;                              // Price stop level
+INPUT int OsMA_TickFilterMethod = 1;                              // Tick filter method
+INPUT float OsMA_MaxSpread = 4.0;                                 // Max spread to trade (pips)
+INPUT int OsMA_Shift = 0;                                         // Shift
+INPUT int OsMA_OrderCloseTime = -20;                              // Order close time in mins (>0) or bars (<0)
 INPUT string __OsMA_Indi_OsMA_Parameters__ =
     "-- OsMA strategy: OsMA indicator params --";                               // >>> OsMA strategy: OsMA indicator <<<
 INPUT int OsMA_Indi_OsMA_Period_Fast = 8;                                       // Period fast
