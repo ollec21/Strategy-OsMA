@@ -74,12 +74,12 @@ class Stg_OsMA : public Strategy {
     // Initialize strategy initial values.
     OsMAParams _indi_params(indi_osma_defaults, _tf);
     StgParams _stg_params(stg_osma_defaults);
-    if (!Terminal::IsOptimization()) {
-      SetParamsByTf<OsMAParams>(_indi_params, _tf, indi_osma_m1, indi_osma_m5, indi_osma_m15, indi_osma_m30,
-                                indi_osma_h1, indi_osma_h4, indi_osma_h8);
-      SetParamsByTf<StgParams>(_stg_params, _tf, stg_osma_m1, stg_osma_m5, stg_osma_m15, stg_osma_m30, stg_osma_h1,
-                               stg_osma_h4, stg_osma_h8);
-    }
+#ifdef __config__
+    SetParamsByTf<OsMAParams>(_indi_params, _tf, indi_osma_m1, indi_osma_m5, indi_osma_m15, indi_osma_m30, indi_osma_h1,
+                              indi_osma_h4, indi_osma_h8);
+    SetParamsByTf<StgParams>(_stg_params, _tf, stg_osma_m1, stg_osma_m5, stg_osma_m15, stg_osma_m30, stg_osma_h1,
+                             stg_osma_h4, stg_osma_h8);
+#endif
     // Initialize indicator.
     OsMAParams osma_params(_indi_params);
     _stg_params.SetIndicator(new Indi_OsMA(_indi_params));
