@@ -8,8 +8,8 @@ struct Indi_OsMA_Params_M15 : OsMAParams {
   Indi_OsMA_Params_M15() : OsMAParams(indi_osma_defaults, PERIOD_M15) {
     applied_price = (ENUM_APPLIED_PRICE)1;
     ema_fast_period = 8;
-    ema_slow_period = 54;
-    signal_period = 14;
+    ema_slow_period = 46;
+    signal_period = 22;
     shift = 0;
   }
 } indi_osma_m15;
